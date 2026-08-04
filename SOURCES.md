@@ -31,7 +31,7 @@ Implementation facts below were read on **2026-08-04** against ComfyUI `master`.
 | Style list (`Cinematic`, `live-action`, `2D-animated`, `3D CG`, `claymation`, `watercolor`, `vintage film`) | Official |
 | `<Subject N>` carries identity; a standalone `<Picture N>` is only a frame anchor | Official |
 | One `<Subject N>` may cite several assets, stating what each provides | Official |
-| Doing so reduces reference competition in the rendered output | Empirical |
+| Doing so reduces reference competition in the rendered output | Empirical — one positive user report (2026-08-04): three assets merged into one subject, identity from two stills and timing from a video containing a different person, with no identity or wardrobe bleed. Single seed, no paired control, so it does not establish that the scoping caused the result |
 | `retention_analysis` markers and `summary` task types | Official |
 | Speaker IDs, `<d>` tags, `<scenetrans>`, `<cutoff>`, voiceover phrasing | Official |
 | `detailed_description` runs *normally* 350–500 words for generation tasks, with documented exceptions for dialogue-dense and editing work | Official |
