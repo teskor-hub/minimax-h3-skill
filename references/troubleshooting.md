@@ -84,6 +84,28 @@
 
 **Fix.** Attach a picture or clip alongside it.
 
+## A fall or impact never happens
+
+**Cause.** "She falls" is an outcome, and the model smooths outcomes away. Or the
+framing does not contain the ground she is falling toward. Or a cheaper event in the
+prompt is being repeated instead — three shots fired rather than one fall.
+
+**Fix.** Give the trajectory as intermediate poses — `her rear foot skids, her knees
+fold, she hits the gravel sitting down, her legs stretch out in front of her`. Widen
+the frame so the ground is in it. Constrain the cheap event explicitly (`exactly one
+shot is fired in the whole clip`). Lock the end state or she springs back up.
+
+## The fall looks weightless, like moon gravity
+
+**Cause.** The beat is too long. Beat duration is read literally as event speed —
+allocate 1.5 s to a fall and you get a 1.5-second fall, which is slow motion.
+
+**Fix.** Budget about 0.5 s for the fall itself and spend the spare time on the
+aftermath. Add `real-time speed throughout, no slow motion, no ramping` near the top
+of the prompt. Weight comes from the stop, not the drop: `she stops dead on impact,
+no float, no drift, no bounce`. Add consequences — dust kicking up, motion blur during
+the fast part, hair settling a beat *after* the body has already landed.
+
 ## Output looks soft or noisy
 
 **Cause.** Almost never the step count. Usually quantisation level or resolution.

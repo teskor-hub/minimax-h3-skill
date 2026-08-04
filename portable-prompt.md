@@ -100,9 +100,16 @@ past her shoulder; her head and chest always face the same general direction`.
 **Big physical events need intermediate poses and room in the frame.** "She falls" is
 an outcome the model will smooth away. Give the trajectory — `her rear foot skids, her
 knees buckle, she sits down hard onto the gravel, her legs stretch out in front of
-her` — allow 1.5–2 s for it, and make sure the framing actually contains the ground
-she is falling toward. Then lock the end state (`she does not get up`) or she springs
-back upright.
+her` — and make sure the framing actually contains the ground she is falling toward.
+Then lock the end state (`she does not get up`) or she springs back upright.
+
+**Beat duration is read literally as event speed.** Give a fall 1.5 s and the model
+renders a 1.5-second fall — floating, moon-gravity, weightless. Real falls take about
+half a second: budget the beat accordingly and spend the spare time on the aftermath.
+Weight comes from the *stop*, not the drop, so state it — `she stops dead on impact,
+no float, no drift, no bounce` — add `real-time speed throughout, no slow motion, no
+ramping` near the top, and give the impact its consequences: dust kicking up, motion
+blur during the fast part, hair settling a beat *after* the body has already landed.
 
 **Objects absent from the reference rarely materialise.** If the subject must hold
 something, supply it as a reference image with its own role, or restructure so the
