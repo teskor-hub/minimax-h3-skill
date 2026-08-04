@@ -217,8 +217,9 @@ handheld rhythm are followed; none of its people, wardrobe, location or lighting
 ```
 
 The clause naming what the video does *not* supply works here because the marker in front
-of it already carries that meaning. The identical sentence dropped into
-`detailed_description` is just prose, and prose loses to the data.
+of it already carries that meaning within MiniMax's documented convention. ComfyUI parses
+nothing, so both forms arrive as ordinary tokens — the claim that the scoped form works
+better is empirical, not mechanical.
 
 Anything reused as visible content from a video is a `<Subject N>`. `<Video N>` names the
 asset or its structure and never replaces subject labels. Labels are numbered per type by
@@ -344,7 +345,7 @@ reference cannot carry structure through the prompt path.
 | Event repeats | name it once, no bans, block with scene state |
 | Falls don't happen | no intermediate poses, or the frame lacks the ground |
 | Falls look weightless | beat too long; ~0.5 s plus a hard stop |
-| Motion mush | one camera move per shot |
+| Motion mush | one *primary* camera move per shot; a framing tilt alongside it is fine |
 | Rushed or teleporting | timeline longer than the frame count |
 | Unwanted music | you left `non_diegetic_music` out |
 | Roles swapped by themselves | labels follow slot index in a fixed category order, not filenames |

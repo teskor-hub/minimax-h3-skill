@@ -52,7 +52,7 @@ overall_soundscape: <...>
 non_diegetic_music: <...> — or N/A.
 ```
 
-## Full-reference (R2V)
+## Full-reference (Ref2VA)
 
 ```
 subject_definitions:

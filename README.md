@@ -48,7 +48,7 @@ It folds the framework, the rules, all four mode templates and the symptom→fix
 
 Ask in plain language:
 
-> Write me an R2V prompt — this photo of a woman, the viewpoint rises above her head and she looks up into it
+> Write me a Ref2VA prompt — this photo of a woman, the viewpoint rises above her head and she looks up into it
 
 and you get a prompt in MiniMax's documented six-section full-reference structure, with the device deliberately absent (it's the viewpoint, so it should never be rendered), hands cropped at the frame edge (where extra fingers come from), and camera motion separated from body motion (joined, they resolve into a prop).
 
@@ -60,7 +60,7 @@ Ask which model to download and it answers from your actual VRAM, not from a gen
 |---|---|---|
 | `SKILL.md` | Claude Code | mode selection, output formats, reference labels, camera vocabulary, hard rules |
 | `references/prompting.md` | Claude Code | the official T2VA / I2VA / FL2VA / L2VA format in depth |
-| `references/reference-mode.md` | Claude Code | the official six-section full-reference (R2V) format |
+| `references/reference-mode.md` | Claude Code | the official six-section full-reference (Ref2VA) format |
 | `references/templates.md` | Claude Code | fill-in templates for every mode, with a worked example |
 | `references/comfyui.md` | Claude Code | every checkpoint with sizes, quant explanations, VRAM tiers, node-by-node settings |
 | `references/troubleshooting.md` | Claude Code | symptom → cause → fix |

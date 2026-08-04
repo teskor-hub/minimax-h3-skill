@@ -1,6 +1,6 @@
 ---
 name: minimax-h3
-description: Write, debug and structure prompts for MiniMax H3 video generation (T2VA, I2VA, FL2VA, L2VA, full-reference R2V) and configure its ComfyUI workflow. Use when the user mentions MiniMax H3, minimax_h3, fl2va, ref2va, MiniMaxH3ReferenceToVideo, reference-to-video, or asks to animate a photo, write a video prompt, pick a model quant, or fix drifting identity, phantom objects, mangled hands, weightless falls and broken camera moves in H3 output.
+description: Write, debug and structure prompts for MiniMax H3 video generation (T2VA, I2VA, FL2VA, L2VA, Ref2VA) and configure its ComfyUI workflow. Use when the user mentions MiniMax H3, minimax_h3, fl2va, ref2va, MiniMaxH3ReferenceToVideo, reference-to-video, or asks to animate a photo, write a video prompt, pick a model quant, or fix drifting identity, phantom objects, mangled hands, weightless falls and broken camera moves in H3 output.
 ---
 
 # MiniMax H3 — prompting and ComfyUI setup
@@ -125,7 +125,7 @@ These are empirical — none of them appear in MiniMax's guides.
 
 **Structure beats instruction.** Anything you can make impossible by construction should be made impossible by construction rather than forbidden in words. A second shot is prevented by a lowered muzzle and drifting smoke, not by `no second shot`. A subject spinning instead of the camera is prevented by describing background parallax, not by `she does not turn`. A reference video bleeding its actor into your output is prevented by a merged `<Subject N>` definition and a `weak_reference` marker in `retention_analysis`, not by `do not take the person from <Video 1>` in the body.
 
-This is not "never exclude anything" — it is about **where the exclusion lives**. A fidelity marker is an enum the format defines and the model was trained to read; the same words as a sentence in `detailed_description` are prose competing against a data signal, and the data usually wins.
+This is not "never exclude anything" — it is about **where the exclusion lives**. A fidelity marker is a fixed value in MiniMax's documented format, which is a stronger convention than an ad-hoc sentence; but ComfyUI parses nothing, so it arrives as ordinary prompt tokens either way. That scoping there beats the same words in the body is **empirical**, not mechanical. What is solid is the general observation: a ban is text competing against a data signal, and the data usually wins.
 
 **There is no negative prompt.** The ComfyUI template uses `BasicGuider` — one conditioning input, CFG effectively 1, no negative socket. State the desired condition positively instead. Do not reach for `CFGGuider` casually: it doubles inference time, and how H3 was trained with respect to guidance is not established by any source here.
 

@@ -18,6 +18,8 @@ Primary sources:
 
 Implementation facts below were read on **2026-08-04** against ComfyUI `master`.
 
+**Scope.** This file catalogues claims that could be mistaken for documented fact, plus every heuristic stated in the skill's own voice. It does not enumerate each individual restatement of MiniMax's grammar — a single row covers a rule and all the places it is repeated. If a statement in the model-facing files is not traceable to a row here, that is a gap worth reporting.
+
 ## Prompt format
 
 | Claim | Type |
@@ -32,7 +34,7 @@ Implementation facts below were read on **2026-08-04** against ComfyUI `master`.
 | Doing so reduces reference competition in the rendered output | Empirical |
 | `retention_analysis` markers and `summary` task types | Official |
 | Speaker IDs, `<d>` tags, `<scenetrans>`, `<cutoff>`, voiceover phrasing | Official |
-| `detailed_description` runs 350–500 words for generation tasks | Official |
+| `detailed_description` runs *normally* 350–500 words for generation tasks, with documented exceptions for dialogue-dense and editing work | Official |
 | Prefer camera motion over a cut when only distance or angle changes | Official |
 
 ## ComfyUI implementation
@@ -78,6 +80,26 @@ Observed while building this, not measured under controlled conditions. Each is 
 | 20 `res_multistep` steps ≈ 35–40 Euler steps | Rule of thumb, unmeasured on this model |
 | 30 steps buy nothing visible over 20 | Unmeasured |
 | H3 was not trained with guidance | **Unsupported** — inferred from the template using CFG 1 |
+
+## Editorial and capability claims
+
+Statements the skill makes in its own voice, which a reader could otherwise mistake for documentation.
+
+| Claim | Type |
+|---|---|
+| H3 generates video and stereo audio in one forward pass | Implementation — the node builds a joint video+audio latent and requires both VAEs |
+| `fl2va` and `ref2va` are separate weights, and the mode → checkpoint mapping | Implementation (file names, stock templates) |
+| Frame count drives VRAM and render time | Implementation (latent dimensions scale with it) |
+| Reference audio cannot carry meaning through the prompt path | Implementation — only its label reaches the encoder |
+| A negative list such as `no extra fingers` is ignored | Implementation (no negative socket) plus Empirical for the phrasing advice |
+| "Value in the picture versus who is in it" as the mode-selection rule | Editorial framing, not from any source |
+| Forcing an unseen viewpoint through I2VA collapses identity | Empirical |
+| H3 gives recognisable likeness rather than face-swap identity | Empirical |
+| Two to four reference photos from different angles improve likeness | Empirical |
+| An unassigned reference role is the top failure in Ref2VA | Empirical, echoed by community guides |
+| Camera motion is the weakest axis in text conditioning | Empirical |
+| Iterate one variable at a time at a fixed seed | General craft, not H3-specific |
+| Retention markers outperform equivalent prose in the body | Empirical — the marker vocabulary is Official, but ComfyUI parses nothing, so both arrive as ordinary tokens |
 
 ## Production heuristics
 

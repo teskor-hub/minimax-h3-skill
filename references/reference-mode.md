@@ -1,4 +1,4 @@
-# Full-reference mode (R2V) — the official six-section format
+# Full-reference mode (Ref2VA) — the official six-section format
 
 Source: MiniMax's `VIDEO_PROMPT_WRITING_GUIDE_ref_en.md`. Runs on the `ref2va` checkpoint.
 

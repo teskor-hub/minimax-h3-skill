@@ -126,7 +126,7 @@ CreateVideo         24 fps, bit_depth 8
 
 ### What to actually tune
 
-**`scheduler`: try `beta` or `normal` against `simple`.** On reference-heavy graphs — which R2V always is — `res_multistep` paired with `beta` or `normal` often beats the default `simple`. This is the one setting on the sampling panel worth an A/B at a fixed seed.
+**`scheduler`: try `beta` or `normal` against `simple`.** On reference-heavy graphs — which Ref2VA always is — `res_multistep` paired with `beta` or `normal` often beats the default `simple`. This is the one setting on the sampling panel worth an A/B at a fixed seed.
 
 **`ref_image_size`: `match` → `max`** for the final render. It holds identity noticeably better than any sampler change — but reference tokens are re-attended at every sampling step, so `max` can be several times slower. Iterate on `match`, finish on `max`. Full decision table below.
 
@@ -138,7 +138,7 @@ CreateVideo         24 fps, bit_depth 8
 
 **Sage Attention**, if installed, roughly doubles generation speed with minimal quality loss. Blackwell needs SageAttention 2++ or 3.
 
-## R2V input wiring
+## Ref2VA input wiring
 
 `MiniMaxH3ReferenceToVideo` accepts up to **9 images, 3 videos, 3 video soundtracks and 3 standalone audio clips** — verified against the node's auto-grow schema.
 
@@ -255,7 +255,7 @@ ref_audios.ref_audio_0              AUDIO
 
 **`ref_video_0` is typed `IMAGE`, not `VIDEO`.** Two consequences.
 
-First, audio is not extracted automatically — that is why `ref_video_audio_0` exists as its own socket. Load the clip with `LoadVideo` → `GetVideoComponents` (splits `VIDEO` into `IMAGE`, `AUDIO`, fps) or with `VHS_LoadVideo`, then wire the frames and the audio separately. The stock R2V template ships only `LoadImage` nodes; you add the video loader yourself. Reference frames also cost VRAM directly, so trim the clip to the part that carries the motion rather than feeding it whole.
+First, audio is not extracted automatically — that is why `ref_video_audio_0` exists as its own socket. Load the clip with `LoadVideo` → `GetVideoComponents` (splits `VIDEO` into `IMAGE`, `AUDIO`, fps) or with `VHS_LoadVideo`, then wire the frames and the audio separately. The stock Ref2VA template ships only `LoadImage` nodes; you add the video loader yourself. Reference frames also cost VRAM directly, so trim the clip to the part that carries the motion rather than feeding it whole.
 
 Second, and more important: reference video and reference stills enter the model **through the same channel**, as batches of images into Qwen3VL. There is no architectural separation between "this input carries identity" and "this input carries motion" — that split exists **only in the prompt text**. Unlike a pose ControlNet, where motion arrives on a separate spatial path and physically cannot carry appearance, here every reference competes on every axis.
 
