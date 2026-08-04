@@ -66,7 +66,9 @@ Every beat names something that *changes*. "She stands in the doorway" is not a 
 it is a guess. Name the room tone, the effects and their timing, and say `no music`
 when you mean it.
 
-**Locks.** Identity anchors and bans, stated up front, never buried at the end.
+**Locks.** Identity anchors, stated up front, never buried at the end. Keep bans to a
+minimum here — every prohibition is another mention of the thing you don't want, and
+mentions add weight. Prefer a positive statement of the desired state.
 
 ## Hard rules
 
@@ -116,9 +118,23 @@ something, supply it as a reference image with its own role, or restructure so t
 object is off-frame. A device that *is* the viewpoint should never be described at
 all — the visible outstretched arm is what sells the grip.
 
-**Repeated easy events replace hard ones.** If a hard beat is failing, the model pads
-with the cheap one (firing three shots instead of falling once). Constrain it:
-`there is exactly one shot fired in the whole clip`.
+**The model cannot count, and bans amplify what they ban.** There is no event counter
+in a diffusion model — `exactly one shot` is a token sequence, not a constraint. Worse,
+`no second shot` puts *second shot* into the conditioning and raises its salience, and
+at CFG 1 there is no negative channel to subtract it. Every mention of an event, the
+prohibitions included, adds weight to that event happening: a prompt saying "one shot"
+six different ways is a prompt about repeated shooting.
+
+Name the event **once**, in one beat, with no accompanying prohibition, and keep it out
+of the `Locks` block. Then make repetition impossible through **scene state** rather
+than instruction — the muzzle already lowered, smoke drifting from the barrel, the
+spent shell on the ground, the stock off her shoulder. A ban is a word; a lowered
+barrel is something the model can draw. Put the event early and fill the remaining
+time with its consequences, so there is no idle timeline left to repeat it in.
+
+The same applies to any hard beat that keeps getting skipped: the model pads with the
+cheap event it knows (firing three times instead of falling once). Give the hard beat
+consequences to render and the cheap one nothing to repeat into.
 
 **One camera move per beat.** Stacked equal-weight moves collapse into mush.
 

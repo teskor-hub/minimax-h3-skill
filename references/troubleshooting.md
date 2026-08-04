@@ -84,6 +84,22 @@
 
 **Fix.** Attach a picture or clip alongside it.
 
+## The event happens more times than asked ("exactly one shot" fires three)
+
+**Cause.** Diffusion models do not count — `exactly one` is a token sequence, not a
+constraint, and nothing tracks how many times an event occurred. Negation makes it
+worse: `no second shot` puts *second shot* into the conditioning and raises its
+salience, with no negative channel at CFG 1 to subtract it. On top of that, the
+training prior for most actions is repetition — range footage almost always contains
+a burst. Every mention of the event, bans included, adds weight to it.
+
+**Fix.** Count the mentions in your own prompt; a typical failing prompt names the
+event six times between the beats and the `Locks` block. Name it once, in one beat,
+with no prohibition attached, and delete it from `Locks`. Then block repetition with
+scene state rather than instruction — the muzzle lowered, smoke drifting, the spent
+shell on the gravel, the stock off her shoulder. Put the event early and fill the rest
+of the timeline with its consequences, so there is no idle time to repeat it in.
+
 ## A fall or impact never happens
 
 **Cause.** "She falls" is an outcome, and the model smooths outcomes away. Or the

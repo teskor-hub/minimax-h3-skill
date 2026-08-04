@@ -69,6 +69,10 @@ Budget 1–3 beats per 5 seconds. Match beat count to duration instead of paddin
 
 **There is no negative prompt.** The ComfyUI template uses `BasicGuider`, i.e. CFG = 1, single conditioning input, no negative socket. Lists like `no extra fingers, no watermark` have nowhere to go. State the desired state positively instead: `her right hand grips firmly, five clearly separated fingers`. Do not swap in `CFGGuider` — H3 is tuned for CFG 1, and it doubles inference time.
 
+**The model cannot count, and bans amplify what they ban.** There is no event counter — `exactly one shot` is a token sequence, not a constraint, and `no second shot` puts *second shot* into the conditioning where CFG 1 offers no negative channel to subtract it. Every mention of an event, prohibitions included, adds weight to it happening. Name the event once, in one beat, keep it out of `Locks`, and suppress repetition through scene state instead — muzzle lowered, smoke drifting, spent shell on the ground. A ban is a word; a lowered barrel is something the model can draw.
+
+**Beat duration is read literally as event speed.** A fall given 1.5 s renders as a 1.5-second fall — weightless, moon gravity. Real falls take about half a second. Budget the beat to the real duration, spend the spare time on the aftermath, and remember that weight comes from the stop rather than the drop.
+
 **One camera move per beat.** Stacked equal-weight moves (orbit + push-in + tilt at once) collapse into mush.
 
 **Objects that do not exist in the reference rarely materialise.** If the subject must hold something, either supply it as a reference image with its own role, or restructure so the object is off-frame.
