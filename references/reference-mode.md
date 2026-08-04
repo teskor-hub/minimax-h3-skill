@@ -35,7 +35,9 @@ It is a **content unit that will appear in the target video**, not the source fi
 <Subject 1> is the woman whose appearance comes from <Picture 1> and whose walking motion comes from <Video 1>.
 ```
 
-One subject, two assets, each with a stated contribution. There is no prohibition anywhere: you never write "do not take the person from `<Video 1>`", because the video was never given the identity role in the first place.
+One subject, two assets, each with a stated contribution.
+
+Note what this does *not* rely on. Scoping a reference is not about whether you exclude things — it is about **where the exclusion lives**. Here the video is simply never given the identity role, so nothing has to be taken away from it later. Where an explicit exclusion is genuinely needed, it belongs in `retention_analysis` behind a fidelity marker, which is an enum the format defines rather than a plea in prose. `do not take the person from <Video 1>` written into `detailed_description` is prose competing against a data signal, and it loses; `<Video 1> …: weak_reference - …` is a declaration the format expects, and it holds.
 
 ### `<Picture N>` — concrete frame anchors only
 

@@ -97,7 +97,9 @@ Prefer camera motion over a cut when only distance or angle changes. A cut shoul
 
 These are empirical — none of them appear in MiniMax's guides.
 
-**Structure beats instruction.** Anything you can make impossible by construction should be made impossible by construction rather than forbidden in words. A second shot is prevented by a lowered muzzle and drifting smoke, not by `no second shot`. A subject spinning instead of the camera is prevented by describing background parallax, not by `she does not turn`. A reference video bleeding its actor into your output is prevented by a merged `<Subject N>` definition, not by `do not take the person from <Video 1>`. Every ban is a text instruction competing against a data signal, and the data usually wins.
+**Structure beats instruction.** Anything you can make impossible by construction should be made impossible by construction rather than forbidden in words. A second shot is prevented by a lowered muzzle and drifting smoke, not by `no second shot`. A subject spinning instead of the camera is prevented by describing background parallax, not by `she does not turn`. A reference video bleeding its actor into your output is prevented by a merged `<Subject N>` definition and a `weak_reference` marker in `retention_analysis`, not by `do not take the person from <Video 1>` in the body.
+
+This is not "never exclude anything" — it is about **where the exclusion lives**. A fidelity marker is an enum the format defines and the model was trained to read; the same words as a sentence in `detailed_description` are prose competing against a data signal, and the data usually wins.
 
 **There is no negative prompt.** The ComfyUI template uses `BasicGuider` — one conditioning input, CFG effectively 1, no negative socket. State the desired condition positively instead. Do not swap in `CFGGuider`: it doubles inference time and H3 was not trained with guidance.
 

@@ -117,14 +117,23 @@ resolved:**
 motion comes from <Video 1>.
 ```
 
-That is the official answer to "motion from the video, face from the photo". You never
-forbid the video from contributing a face — you define one subject and state what each
-source supplies, then scope the video's role in `retention_analysis`:
+That is the official answer to "motion from the video, face from the photo". Scoping a
+reference is not about *whether* you exclude things — it is about **where the exclusion
+lives**. Two structural slots do the work, and a sentence in the body does not:
+
+1. **`subject_definitions`** states positively what each asset supplies. The video is
+   simply never given the identity role, so there is nothing to take away later.
+2. **`retention_analysis`** assigns a fixed fidelity marker. `weak_reference` is an enum
+   value the format defines — it is a declaration the parser expects, not a request:
 
 ```
 <Video 1> (camera movement and pacing): weak_reference - only the travelling path and
 handheld rhythm are followed; none of its people, wardrobe, location or lighting appear.
 ```
+
+The clause naming what the video does *not* supply works here because the marker in front
+of it already carries that meaning. The identical sentence dropped into
+`detailed_description` is just prose, and prose loses to the data.
 
 Anything reused as visible content from a video is a `<Subject N>`. `<Video N>` names the
 asset or its structure and never replaces subject labels. Labels are numbered by socket
@@ -171,8 +180,11 @@ construction should be made impossible by construction rather than forbidden in 
 second shot is prevented by a lowered muzzle and drifting smoke, not by `no second shot`.
 A subject spinning instead of the camera is prevented by describing background parallax,
 not by `she does not turn`. A reference video bleeding its actor is prevented by a merged
-subject definition, not by `do not take the person from <Video 1>`. Every ban is a text
-instruction competing against a data signal, and the data usually wins.
+subject definition plus a `weak_reference` marker in `retention_analysis`, not by
+`do not take the person from <Video 1>` in the body. This is not "never exclude
+anything" — it is about where the exclusion lives. A fidelity marker is an enum the
+format defines; the same words as a sentence in the body are prose competing against a
+data signal, and the data usually wins.
 
 **There is no negative prompt.** H3 runs at CFG 1 with a single conditioning input.
 `no extra fingers, no watermark` is ignored. State the desired condition positively.
