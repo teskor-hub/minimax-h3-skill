@@ -1,8 +1,17 @@
 # Portable version — for ChatGPT, Grok, Gemini or any other chat model
 
-Paste everything below the line into a system prompt, a custom instruction, or just
-as the first message of a conversation. It is self-contained: no Claude Code, no
-file loading, no tooling. Then describe the shot you want in plain language.
+**This file is a prompt, not a skill.** It does not get installed anywhere and it does
+not need Claude Code. It is the same knowledge as `SKILL.md` + `references/`, flattened
+into one self-contained block of text — because a chat model cannot lazily load the
+reference files the way Claude Code does.
+
+Paste everything below the horizontal rule into a system prompt, a custom instruction,
+or just as the first message of a conversation. Then describe the shot you want in
+plain language and it writes the H3 prompt.
+
+The ComfyUI material (checkpoints, quants, VRAM, node settings) is deliberately left
+out — it is irrelevant when you are only writing prompts. If you need it, see
+`references/comfyui.md`.
 
 ---
 
