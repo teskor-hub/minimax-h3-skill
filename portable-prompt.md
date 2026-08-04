@@ -107,9 +107,9 @@ identity collapses.
 
 **There is no video-to-video, so no frame-preserving character swap.** Sampling always
 starts from an empty latent; reference latents are conditioning re-injected each step and
-never denoised, so no frame of a reference video survives into the output. The `video
-editing` and `video continuation` task types belong to MiniMax's hosted pipeline, not to
-local inference.
+never denoised, so no frame of a reference video survives into the output. Whether the `video editing` and
+`video continuation` task types behave differently under local inference is untested —
+but no source frame is preserved whichever prefix you write.
 
 **But the useful version of that request is the tool's main purpose.** "A new video where
 the person resembles my reference photo and moves the way this clip does" is exactly
@@ -304,8 +304,9 @@ the ground.
 ## Limits
 
 2K (short edge 1440), 24 fps, 5–15 s. Prompt field 7000 characters. `detailed_description`
-350–500 words. Full-reference: 9 images + 3 videos + 3 audio, 12 files max; reference
-video and audio 2–15 s each, 15 s combined; standalone audio rejected.
+normally 350–500 words, with documented exceptions. Full-reference slots: 9 images,
+3 videos, 3 video soundtracks, 3 standalone audio clips — and standalone audio is
+accepted on its own. A reference video longer than the target length is truncated to it.
 
 Frame count snaps to a **17k+5 grid** and anything off it is rounded up silently —
 multiples of 4 are not the rule. At 24 fps: 124 = 5.17 s · 141 = 5.88 s · 158 = 6.58 s ·

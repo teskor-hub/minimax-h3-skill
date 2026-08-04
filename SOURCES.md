@@ -28,7 +28,8 @@ Implementation facts below were read on **2026-08-04** against ComfyUI `master`.
 | Camera vocabulary, amplitude and speed modifiers | Official |
 | Style list (`Cinematic`, `live-action`, `2D-animated`, `3D CG`, `claymation`, `watercolor`, `vintage film`) | Official |
 | `<Subject N>` carries identity; a standalone `<Picture N>` is only a frame anchor | Official |
-| Merging sources in one subject resolves reference conflicts | Official |
+| One `<Subject N>` may cite several assets, stating what each provides | Official |
+| Doing so reduces reference competition in the rendered output | Empirical |
 | `retention_analysis` markers and `summary` task types | Official |
 | Speaker IDs, `<d>` tags, `<scenetrans>`, `<cutoff>`, voiceover phrasing | Official |
 | `detailed_description` runs 350–500 words for generation tasks | Official |
@@ -47,7 +48,10 @@ Implementation facts below were read on **2026-08-04** against ComfyUI `master`.
 | Reference video reaches the encoder at 2 fps in 2-frame blocks | Implementation |
 | Frame count snaps up to a `17k+5` grid | Implementation |
 | Trained range roughly 124–362 frames | Implementation (node tooltip) |
-| Sampling always starts from an empty latent — no video-to-video, no frame-preserving swap | Implementation |
+| Sampling always starts from an empty latent — no frame of a source clip is preserved | Implementation |
+| Reference video is truncated to the target length, then trimmed down to the `17k+5` grid | Implementation |
+| Reference video is resized to a 768 short edge with a 768 × 1344 area cap | Implementation |
+| Whether `[video editing]` behaves differently from `[reference generation]` locally | **Untested** |
 | `ref_image_size` formulas; both downscale only | Implementation |
 | `max` can be several times slower — reference tokens ride every step | Implementation (node tooltip) |
 | Slot maxima: 9 images, 3 videos, 3 video soundtracks, 3 standalone audio | Implementation |
@@ -71,6 +75,9 @@ Observed while building this, not measured under controlled conditions. Each is 
 | A reference video containing a person competes with a reference still on identity | Empirical, with an implementation explanation |
 | Identity holds better with several reference photos covering different angles | Empirical |
 | `beta` or `normal` scheduler may beat `simple` on reference-heavy graphs | Community, unverified here |
+| 20 `res_multistep` steps ≈ 35–40 Euler steps | Rule of thumb, unmeasured on this model |
+| 30 steps buy nothing visible over 20 | Unmeasured |
+| H3 was not trained with guidance | **Unsupported** — inferred from the template using CFG 1 |
 
 ## Community, unverified
 
@@ -80,11 +87,12 @@ Widely repeated but not found in MiniMax's docs or the ComfyUI source. Treat as 
 |---|---|
 | Output up to 2K, short edge 1440 | Community |
 | Prompt field holds 7000 characters | Community |
-| 12 reference files total | Community |
-| Reference video and audio 15 s combined | Community |
+| 12 reference files total | Community — **contradicted** by the node schema |
+| Reference video and audio 15 s combined | Community — no such cap in the execution path |
+| Standalone audio is rejected without an image or video | Community — **contradicted**; the node accepts it unconditionally |
 | Sage Attention roughly doubles speed | Community (ComfyUI docs) |
 | Quantisation quality ordering `bf16` > `int8_convrot` > `pruned int8` | Inferred from method properties; no published benchmark for H3 |
 
 ## What is missing
 
-No controlled A/B data exists here for: the scheduler comparison, the sigma-shift defaults, quality deltas between quants, or whether writing in MiniMax's documented format measurably beats plain prose given that ComfyUI runs no rewriter. Those would need fixed-seed paired renders. Until someone does that, none of them should be stated as measured.
+No controlled A/B data exists here for: the scheduler comparison, the sigma-shift defaults, quality deltas between quants, whether 20 steps differ visibly from 30, whether `[video editing]` behaves differently from `[reference generation]` under local inference, or whether writing in MiniMax's documented format measurably beats plain prose given that ComfyUI runs no rewriter. Those would need fixed-seed paired renders. Until someone does that, none of them should be stated as measured.

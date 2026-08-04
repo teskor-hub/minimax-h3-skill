@@ -10,7 +10,7 @@ Built on MiniMax's own prompt-writing guides, plus the failure modes those guide
 
 ## Why
 
-H3 has a specific output format it was trained on — six labelled sections in reference mode, a fixed alignment instruction in keyframe modes, a defined camera vocabulary with amplitude and speed. Prompts written as prose or keyword clouds work far worse, and almost nobody writes them the documented way.
+H3 has a documented output format — six labelled sections in reference mode, a fixed alignment instruction in keyframe modes, a defined camera vocabulary with amplitude and speed — and almost nobody writes prompts that way. Plain prose omits relationships the structure makes explicit; how large the resulting quality difference is has not been measured here.
 
 Then there is everything the documentation doesn't mention. Two 66 GB checkpoints that look interchangeable and are not. No negative prompt at all, so half the prompts on the internet carry a `no extra fingers, no watermark` list that goes nowhere. A model that renders `she holds the camera` as a woman holding a camera, spins the subject when you ask the camera to move, and renders a fall in moon gravity if you give the beat too many seconds.
 
@@ -91,7 +91,7 @@ Ask which model to download and it answers from your actual VRAM, not from a gen
 
 Video VAE `fp16` 5.21 GB and audio VAE `fp32` 0.61 GB are required in every configuration. The text encoder and both VAEs are **shared across all four modes** — switching between I2VA and Ref2VA changes only the diffusion checkpoint.
 
-Output: up to 2K (short edge 1440), 24 fps, 5–15 s. R2V accepts 9 images + 3 videos + 3 audio clips, 12 files maximum.
+Verified in the ComfyUI source: 24 fps, a `17k+5` frame grid with a trained range of roughly 124–362 frames, and reference slots for 9 images, 3 videos, 3 video soundtracks and 3 standalone audio clips. A 2K / 1440-short-edge output mode and a 7000-character prompt field are community-reported and not verified against a primary source — see [SOURCES.md](SOURCES.md).
 
 ## Requirements
 

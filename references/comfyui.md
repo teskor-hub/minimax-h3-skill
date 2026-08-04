@@ -116,11 +116,11 @@ CreateVideo         24 fps, bit_depth 8
 
 ### What to leave alone
 
-**Steps: 20.** `res_multistep` is a higher-order multistep sampler and converges roughly twice as fast as Euler — 20 steps here is equivalent to 35–40 on `euler`. Raising to 30 costs 50 % more time for a difference you will not see. Steps are the most overrated knob in video generation: time scales linearly, quality plateaus.
+**Steps: 20**, the stock template value. `res_multistep` is a higher-order multistep sampler, so it needs fewer steps than `euler` for comparable convergence — the often-quoted "20 here equals 35–40 there" is a rule of thumb, not a measurement on this model. Raising to 30 costs 50 % more time; whether it buys anything visible has not been tested here. Steps are generally the most overrated knob in video generation, since time scales linearly while quality plateaus.
 
 **Denoise 1.0.** Only lower it for video-to-video.
 
-**`BasicGuider`.** H3 is trained for CFG 1. Swapping in `CFGGuider` to get a negative prompt doubles inference time (two forward passes per step) and can destabilise a model that never saw guidance during training.
+**`BasicGuider`.** The stock template runs a single conditioning input, so CFG is effectively 1. Swapping in `CFGGuider` to get a negative prompt doubles inference time — two forward passes per step — and the model's guidance behaviour is unknown, since nothing in the sources states how it was trained in that respect.
 
 **24 fps / bit_depth 8.** Standard. 16-bit only matters if you are grading downstream.
 
@@ -140,7 +140,13 @@ CreateVideo         24 fps, bit_depth 8
 
 ## R2V input wiring
 
-`MiniMaxH3ReferenceToVideo` accepts up to **9 images, 3 videos, 3 video soundtracks and 3 standalone audio clips** — verified against the node's auto-grow schema. The node tooltip gives reference video as 2–15 s. The often-quoted "12 files total" and "15 s combined" caps come from community write-ups rather than MiniMax or the ComfyUI source; treat them as approximate. Standalone audio must accompany at least one image or video.
+`MiniMaxH3ReferenceToVideo` accepts up to **9 images, 3 videos, 3 video soundtracks and 3 standalone audio clips** — verified against the node's auto-grow schema.
+
+**Standalone audio is accepted on its own.** The execution path iterates `ref_audios` unconditionally and appends an audio ref block; there is no check requiring an accompanying image or video. The widely repeated "standalone audio is rejected" is a community claim contradicted by the source.
+
+**Reference video is truncated to your target length.** A clip longer than `length` is cut to it, then trimmed *down* until its frame count also satisfies `17k+5`. Only a 5-frame minimum is enforced — the 2–15 s figure is a tooltip recommendation, not a check. There is no combined video-plus-audio duration cap in the code, and no 12-file total.
+
+Reference videos are also resized to the model's native canvas — 768 short edge, 768 × 1344 area cap, each axis rounded to 32 — which is why the default generation size of 1344 × 768 sits exactly on that cap. The generation width and height themselves are plain widgets and are not clamped to it.
 
 Prompt tags `<Picture 1>`, `<Video 1>`, `<Audio 1>` are numbered **per type, by slot index, within a fixed category order** — images, then videos with their soundtracks, then standalone audio. Moving an asset between slots reassigns the roles without touching the prompt, which is a subtle and very annoying source of "the prompt suddenly stopped working".
 
@@ -152,7 +158,7 @@ So **not a single frame of a reference video survives into the output.** Everyth
 
 This settles a question that comes up constantly: **you cannot take a source video and swap the character in it.** There is nothing to swap into — the source is never preserved. What you get is a *new* video with your subject, approximately following the reference's motion and timing, with the room, lighting and exact framing regenerated from whatever survives ten encoder frames at 2 fps.
 
-The `video editing` and `video continuation` task types in the reference guide are real, but they belong to MiniMax's own pipeline. ComfyUI implements only `reference generation`, so those two prefixes have no mechanism behind them here.
+What this does **not** establish is that the `video editing` and `video continuation` task types are inert locally. The plumbing is identical for every task type — the reference video *is* VAE-encoded and handed to the DiT as a conditioning block — and only the `summary` prefix differs. Whether the model responds differently to `[video editing]` than to `[reference generation]` given the same inputs is untested here. What the empty latent does prove is that no source frame is preserved, whatever prefix you write.
 
 A genuine character swap is a different class of tool — frame-aligned face-swap pipelines, VACE-style spatial conditioning, or hosted editing through MiniMax's API.
 
@@ -160,7 +166,7 @@ A genuine character swap is a different class of tool — frame-aligned face-swa
 
 Read from `comfy/text_encoders/minimax.py` and `comfy_extras/nodes_minimax_h3.py`. This settles several things that are otherwise guesswork.
 
-**There is no prompt rewriter.** MiniMax's guides describe the output format of their rewriting model, but ComfyUI has no such stage — your text is tokenized verbatim and appended to the token stream. The encoder docstring is explicit: *"The H3 presentation is NOT chat-templated: token ids are raw prompt/label text (no special tokens)"*. So writing in the documented format yourself is not optional polish; it is the only way the prompt lands in the distribution the model was trained on.
+**There is no prompt rewriter.** MiniMax's guides describe the output format of their rewriting model, but ComfyUI has no such stage — your text is tokenized verbatim and appended to the token stream. The encoder docstring is explicit: *"The H3 presentation is NOT chat-templated: token ids are raw prompt/label text (no special tokens)"*. So the documented structure only exists in your prompt if you type it. Note the limit of this evidence: it shows there is no rewriting stage, not that the six-section format outperforms plain prose. That comparison has not been measured here.
 
 **The alignment instruction is not emitted for you.** ComfyUI prepends only the picture label and the image itself. The `For the target video, at 0.00 seconds…` and `How the reference pictures align…` lines from the base guide are *your* text — type them as the first line of the prompt box, then a blank line, then the fields.
 

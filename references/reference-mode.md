@@ -161,7 +161,7 @@ At an important subject's first clear appearance, describe its referenced charac
 
 Frame anchors read naturally: `the shot begins from <Picture 1>` · `the shot's keyframe corresponds to <Picture 2>` · `the shot ends on <Picture 3>`.
 
-**350–500 English words** for generation tasks. Dialogue-dense content prioritises fitting the spoken timeline over hitting a word count. Editing descriptions scale with the source. A single shot does not justify a shorter description — distribute detail by information load.
+**350–500 English words** for generation tasks. Dialogue-dense content prioritises fitting the spoken timeline over hitting a word count. Editing descriptions scale with the source. A single shot does not *automatically* justify a shorter description — distribute detail by information load.
 
 Make it genuinely detailed: composition, subject appearance and position, environment and lighting, actions and state changes, camera movement, current sound, and where referenced content actually takes effect. **Do not reduce it to a plot summary or a list of reference relationships.**
 

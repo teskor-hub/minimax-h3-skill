@@ -51,7 +51,7 @@ Decision rule: if the value is in **the picture** — its room, light, grain, co
 
 A shot needing a viewpoint that does not exist in the source photo (back view, wide, different room) is a full-reference job. Forcing it through I2VA makes the model hallucinate the missing body while rotating, which is where identity collapses.
 
-**There is no video-to-video, and therefore no frame-preserving character swap.** Every H3 node in ComfyUI starts sampling from an empty latent; keyframe and reference latents are conditioning re-injected each step and never denoised. No frame of a reference video survives into the output. The `video editing` and `video continuation` task types in the reference guide belong to MiniMax's own pipeline; ComfyUI implements only `reference generation`.
+**There is no video-to-video, and therefore no frame-preserving character swap.** Every H3 node in ComfyUI starts sampling from an empty latent; keyframe and reference latents are conditioning re-injected each step and never denoised. No frame of a reference video survives into the output. The `video editing` and `video continuation` task types are not thereby proven inert locally — the plumbing is identical for every task type and only the `summary` prefix differs — but no source frame is preserved whichever prefix you write. Whether the model responds differently to them under local inference is untested.
 
 **But do not over-correct — the useful version of that request is the tool's main purpose.** "A new video in which the person resembles my reference photo and moves the way this clip does" is exactly `reference generation`, and it works. Expect recognisable likeness rather than face-swap identity: H3 is a generative video model, not an identity adapter. Distinguish the two explicitly when a user says "swap", because they usually mean the second one and will be wrongly discouraged by a flat no.
 
@@ -75,7 +75,7 @@ non_diegetic_music: ...
 subject_definitions:   what each referenced item is and what it contributes
 summary:               [task type] one paragraph
 retention_analysis:    per-label fidelity markers
-detailed_description:  shot-by-shot body, 350–500 words
+detailed_description:  shot-by-shot body, normally 350–500 words
 overall_soundscape:    ambience and physical sound
 non_diegetic_music:    audience-only score, or N/A
 ```
@@ -145,13 +145,13 @@ This is not "never exclude anything" — it is about **where the exclusion lives
 
 ## 6. Limits
 
-Output up to 2K (short edge 1440), 24 fps, 5–15 s. Prompt field 7000 characters. `detailed_description` runs 350–500 English words for generation tasks. Full-reference accepts 9 images + 3 videos + 3 audio clips, 12 files maximum; reference video and audio are 2–15 s each, 15 s combined; standalone audio is rejected and must accompany at least one image or video.
+Output up to 2K (short edge 1440), 24 fps, 5–15 s. Prompt field 7000 characters. `detailed_description` runs 350–500 English words for generation tasks, with documented exceptions: dialogue-dense content departs from the range to fit the spoken timeline, and editing descriptions scale with the source. Full-reference slots in ComfyUI: 9 reference images, 3 reference videos, 3 same-index video soundtracks, 3 standalone audio clips. **Standalone audio is accepted on its own** — the node processes it unconditionally, despite community write-ups claiming otherwise. The reference-video tooltip recommends 2–15 s, but the code enforces only a 5-frame minimum, and a clip longer than your target `length` is truncated to it and then aligned *down* to the `17k+5` grid. No 12-file total or combined-duration cap exists in the source.
 
 **Frame count snaps to a 17k+5 grid**, and anything off it is rounded up silently — multiples of 4 are *not* the rule. Valid values at 24 fps: 124 = 5.17 s · 141 = 5.88 s · 158 = 6.58 s · 175 = 7.29 s · 192 = 8.00 s · 209 = 8.71 s · 226 = 9.42 s · 243 = 10.13 s · 260 = 10.83 s · 277 = 11.54 s · 294 = 12.25 s · 311 = 12.96 s · 328 = 13.67 s · 345 = 14.38 s · 362 = 15.08 s. The trained range is roughly **124–362**; outside it the model is out of distribution.
 
 ## 7. What ComfyUI does with your prompt
 
-**There is no rewriter.** MiniMax's guides describe the output of their own rewriting model, but ComfyUI tokenizes your text verbatim — not chat-templated, no special tokens. Writing in the documented format yourself is therefore the only way to land in the training distribution.
+**There is no rewriter.** MiniMax's guides describe the output of their own rewriting model, but ComfyUI tokenizes your text verbatim — not chat-templated, no special tokens. So the documented structure has to be written by hand if you want it at all. Whether reproducing it outperforms an equivalent plain-prose prompt has not been measured here; this skill uses it as the documented default, not as a proven win.
 
 **The alignment instruction is not emitted for you.** ComfyUI prepends only `"<Picture 1>: "` and the image. The `For the target video, at 0.00 seconds…` and `How the reference pictures align…` lines from the guide are *your* text — type them as the first line of the prompt box, followed by a blank line.
 
