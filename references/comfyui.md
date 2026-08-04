@@ -119,6 +119,18 @@ CreateVideo         24 fps, bit_depth 8
 
 Prompt tags `<Picture 1>`, `<Video 1>`, `<Audio 1>` are numbered **per type, by slot index, within a fixed category order** — images, then videos with their soundtracks, then standalone audio. Moving an asset between slots reassigns the roles without touching the prompt, which is a subtle and very annoying source of "the prompt suddenly stopped working".
 
+### What ComfyUI cannot do: there is no video-to-video
+
+All three H3 nodes begin sampling from an **empty latent** — `torch.zeros(...)` via `_empty_av_latent`. Keyframe and reference latents are, per the module docstring, *"re-injected every step (never denoised)"*: they are conditioning, not the thing being denoised. There is no `denoise < 1` path and no route that turns a source clip into the starting latent.
+
+So **not a single frame of a reference video survives into the output.** Everything is generated from scratch and the references only steer.
+
+This settles a question that comes up constantly: **you cannot take a source video and swap the character in it.** There is nothing to swap into — the source is never preserved. What you get is a *new* video with your subject, approximately following the reference's motion and timing, with the room, lighting and exact framing regenerated from whatever survives ten encoder frames at 2 fps.
+
+The `video editing` and `video continuation` task types in the reference guide are real, but they belong to MiniMax's own pipeline. ComfyUI implements only `reference generation`, so those two prefixes have no mechanism behind them here.
+
+A genuine character swap is a different class of tool — frame-aligned face-swap pipelines, VACE-style spatial conditioning, or hosted editing through MiniMax's API.
+
 ### How ComfyUI actually feeds the model
 
 Read from `comfy/text_encoders/minimax.py` and `comfy_extras/nodes_minimax_h3.py`. This settles several things that are otherwise guesswork.

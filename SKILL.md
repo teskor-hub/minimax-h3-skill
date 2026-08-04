@@ -45,6 +45,8 @@ Decision rule: if the value is in **the picture** — its room, light, grain, co
 
 A shot needing a viewpoint that does not exist in the source photo (back view, wide, different room) is a full-reference job. Forcing it through I2VA makes the model hallucinate the missing body while rotating, which is where identity collapses.
 
+**There is no video-to-video, and therefore no character swap.** Every H3 node in ComfyUI starts sampling from an empty latent; keyframe and reference latents are conditioning re-injected each step and never denoised. No frame of a reference video survives into the output. Asking to "replace the person in this clip" cannot be satisfied — the answer is a new generation that approximately follows the reference's motion, with everything else rebuilt. The `video editing` and `video continuation` task types in the reference guide belong to MiniMax's own pipeline; ComfyUI implements only `reference generation`. Say this plainly when a user asks for a swap rather than producing a prompt that quietly cannot work.
+
 ## 2. Output format
 
 **T2VA / I2VA / FL2VA / L2VA** — an alignment instruction line (except T2VA), one blank line, then three fields:

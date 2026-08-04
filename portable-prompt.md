@@ -57,6 +57,14 @@ A shot needing a viewpoint absent from the source photo is a full-reference job;
 it through I2VA makes the model hallucinate the body mid-rotation, which is where
 identity collapses.
 
+**There is no video-to-video, and therefore no character swap.** Sampling always starts
+from an empty latent; reference latents are conditioning re-injected each step and never
+denoised, so no frame of a reference video survives into the output. "Replace the person
+in this clip" cannot be satisfied — what you get is a new generation that approximately
+follows the reference's motion, with everything else rebuilt. Say so plainly rather than
+writing a prompt that quietly cannot work. The `video editing` and `video continuation`
+task types belong to MiniMax's hosted pipeline, not to local inference.
+
 ## Output format — T2VA / I2VA / FL2VA / L2VA
 
 An alignment instruction line (none for T2VA), one blank line, then three fields.
