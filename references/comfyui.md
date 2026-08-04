@@ -49,6 +49,31 @@ Both required, one variant each, nothing to choose.
 | `minimax_h3_video_vae_fp16.safetensors` | 5.21 GB |
 | `minimax_h3_audio_vae_fp32.safetensors` | 0.61 GB |
 
+## Quantisation buys VRAM, not speed
+
+The most common wrong assumption about this model. A smaller checkpoint of the *same* model has the same parameter count and does the same number of matmuls — only the weight representation in memory changes.
+
+- **`int8_convrot`** stores weights quantised and rotated, then reconstructs them into the compute dtype before the matmul. Real memory saving, essentially no speed change, and the dequant overhead can make it marginally slower.
+- **`pruned`** drops precomputed adaLN tables. That is a file-size change.
+- **`fp8_scaled`** is the one exception: on FP8-native hardware (Ada, Blackwell) the matmuls genuinely run in FP8. On Ampere it is emulated and buys nothing.
+- **`nvfp4_awq`** on the encoder behaves the same way — fast natively on Blackwell, slow elsewhere.
+
+**The one place quantisation transforms speed is fitting versus not fitting.** A model that does not fit forces layerwise offload, which is slower by an order of magnitude. Dropping to a tier that fits entirely in VRAM is an enormous win — not because the arithmetic got faster, but because the swapping stopped. Between two tiers that both fit, the time difference is noise.
+
+**Where speed actually comes from,** in order of payoff:
+
+1. **Sage Attention** — roughly 2×, minimal quality cost, and free. Blackwell needs 2++ or 3.
+2. **Frame count and resolution** — close to linear.
+3. **`ref_image_size: match`** for iteration; reference tokens are re-attended every step.
+4. **A genuinely smaller model** — not a smaller quant. H3's DiT is ~33 B parameters at 66 GB bf16, which is very large for a video model; a lighter architecture is faster because there is less arithmetic, and no quantisation of H3 will reach it.
+5. **Quantisation** — last, and only to fit.
+
+Worth watching: in the Wan ecosystem the decisive speed lever turned out to be **step-distillation LoRAs** cutting 20–30 steps to 4–8, alongside Sage Attention and `torch.compile` — quantisation was never the accelerator, only the way onto smaller cards. No equivalent distillation exists for H3 yet. When one appears it will matter far more than any quant choice.
+
+**Quality ordering** is `bf16` > `int8_convrot` > `pruned_int8_convrot`, with rotation-based quantisation specifically designed to hold 8-bit close to full precision. No measured quality benchmark for H3's quants has been published by MiniMax or Comfy, so treat that ordering as a property of the methods rather than a measurement on this model.
+
+Practical rule: **take the largest tier that fits with headroom, and look for speed elsewhere.**
+
 ## Choosing a build
 
 | VRAM | Diffusion | Encoder | Notes |
