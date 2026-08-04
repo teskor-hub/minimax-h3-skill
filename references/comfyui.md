@@ -147,7 +147,17 @@ Ordinals are 1-based **per type** and follow connection order. The node's own de
 - `match` — `scale = min(1, sqrt((width × height) / (w × h)))`, aspect-preserving, to the generation's pixel *area*
 - `max` — `scale = min(1, 2048 / min(w, h))`, short edge up to 2048 px
 
-Neither upscales. A reference smaller than the generation canvas is unaffected by the setting, so `max` only buys you anything when the source image is genuinely large.
+Both are wrapped in `min(1, …)`, so neither ever upscales. At the default 1344 × 768 canvas the generation area is 1.03 MP, which gives a clean decision table:
+
+| Source reference | `match` | `max` |
+|---|---|---|
+| ≤ 1.03 MP (roughly 880 × 1170 and below) | untouched | untouched |
+| 1–5.6 MP, short edge ≤ 2048 | shrunk to 1.03 MP | untouched |
+| short edge > 2048 (a phone original at 3000 × 4000) | shrunk to ~1 MP | short edge held at 2048 |
+
+**Always set `max`.** It is never worse than `match` — only equal or larger — so there is no losing case.
+
+But it only *does* anything above about a megapixel. Feed a screenshot or a saved social-media image at 800 × 1000 and the two settings produce byte-identical results; the fix there is a higher-resolution source, not a different setting. The cost of `max` is real though: more reference pixels means more vision tokens into Qwen, so if a run OOMs right after you switch, this is the parameter that did it.
 
 **Native canvas.** 768 short edge with a 768 × 1344 area cap, each axis rounded to a multiple of 32. The template's 1344 × 768 is exactly that cap.
 

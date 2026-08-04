@@ -9,7 +9,7 @@ These are empirical. None of them appear in MiniMax's own guides.
 1. Identity was put in a standalone `<Picture N>` instead of `<Subject N>`. The guide explicitly says an image that only defines a character gets no picture entry of its own.
 2. Two references compete for the identity axis — typically a reference video containing a person alongside a reference still. Reference video arrives as an image batch through the same channel as stills, so dozens of frames of a face outweigh one photo.
 3. Wrong mode: a viewpoint absent from the source photo was forced through I2VA, so the model hallucinated the body mid-rotation.
-4. `ref_image_size` left at `match`.
+4. `ref_image_size` left at `match` — but only if the reference is above ~1 MP, since below that both settings are identical no-ops.
 5. Encoder quantised to `nvfp4_awq` — identity flows through the encoder in reference mode.
 
 **Fix.** Define one merged subject naming each source's contribution: `<Subject 1> is the woman whose appearance comes from <Picture 1> and whose walking motion comes from <Video 1>.` Scope the video's role in `retention_analysis` with `weak_reference` and an explicit list of what it does *not* supply. Set `ref_image_size` to `max`. Shorten long camera travel — a three-quarter back view survives where a full 180° does not. On a large-VRAM card, step the encoder up to `int8_convrot` or `bf16`.
