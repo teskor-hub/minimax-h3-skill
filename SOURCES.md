@@ -79,6 +79,23 @@ Observed while building this, not measured under controlled conditions. Each is 
 | 30 steps buy nothing visible over 20 | Unmeasured |
 | H3 was not trained with guidance | **Unsupported** — inferred from the template using CFG 1 |
 
+## Production heuristics
+
+Not from MiniMax, not from the source — craft rules adopted because they held up in practice. Useful, but none of them is a law.
+
+| Claim | Type |
+|---|---|
+| The event-duration table and ~2.7 spoken words per second | Empirical, general production knowledge |
+| Frame defaults 124 / 158 / 192 / 209 / 243+ per shot type | Empirical |
+| One primary camera move per shot | Empirical |
+| An omitted `non_diegetic_music` field tends to produce unwanted music | Empirical |
+| Objects absent from the references rarely materialise mid-shot | Empirical |
+| Cropping heavily foreshortened hands reduces finger artifacts | Empirical |
+| `ref_image_size: max` is never worse for identity | Inferred from the formulas; the slowdown is Implementation |
+| A higher-precision encoder improves identity in Ref2VA | Inferred from the architecture, not measured |
+| The ~170° neck-twist explanation for scrambled anatomy | Empirical interpretation of an observed artifact |
+| Reference-video frames outweigh a portrait on identity | Empirical; the earlier "same channel" explanation was wrong and has been removed |
+
 ## Community, unverified
 
 Widely repeated but not found in MiniMax's docs or the ComfyUI source. Treat as approximate.
