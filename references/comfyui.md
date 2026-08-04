@@ -103,9 +103,9 @@ CreateVideo         24 fps, bit_depth 8
 
 **`scheduler`: try `beta` or `normal` against `simple`.** On reference-heavy graphs — which R2V always is — `res_multistep` paired with `beta` or `normal` often beats the default `simple`. This is the one setting on the sampling panel worth an A/B at a fixed seed.
 
-**`ref_image_size`: `match` → `max`.** `match` scales references to generation resolution and is faster; `max` keeps up to 2048 px on the short edge and holds identity noticeably better. If you care about likeness, this buys more than any sampler change.
+**`ref_image_size`: `match` → `max`** for the final render. It holds identity noticeably better than any sampler change — but reference tokens are re-attended at every sampling step, so `max` can be several times slower. Iterate on `match`, finish on `max`. Full decision table below.
 
-**`length`.** 124 frames at 24 fps = 5.2 s. Match this to the beat count in the prompt — a prompt with a 15-second timeline rendered at 124 frames gets compressed into a frantic 5 seconds. Long or complex camera moves want 180–240 frames; short moves stay crisper at 124.
+**`length`.** 124 frames at 24 fps = 5.17 s. Match this to the timeline in the prompt — a 15-second description rendered at 124 frames gets compressed into a frantic 5 seconds. Long or complex camera moves want 192–243 frames; short moves stay crisper at 124. Values snap **up** to the `17k+5` grid, so pick from it directly (table below).
 
 **Seed → `fixed`** the moment output is close. Debugging a prompt against moving noise is guesswork.
 
@@ -115,9 +115,9 @@ CreateVideo         24 fps, bit_depth 8
 
 ## R2V input wiring
 
-`MiniMaxH3ReferenceToVideo` accepts up to 9 images, 3 videos and 3 audio clips, **12 files total**. Reference video and audio are 2–15 s each, 15 s combined. Standalone audio is rejected — it must accompany at least one image or video.
+`MiniMaxH3ReferenceToVideo` accepts up to **9 images, 3 videos, 3 video soundtracks and 3 standalone audio clips** — verified against the node's auto-grow schema. The node tooltip gives reference video as 2–15 s. The often-quoted "12 files total" and "15 s combined" caps come from community write-ups rather than MiniMax or the ComfyUI source; treat them as approximate. Standalone audio must accompany at least one image or video.
 
-Prompt tags `<Picture 1>`, `<Video 1>`, `<Audio 1>` are numbered by **socket connection order**. Rewiring the inputs reassigns the roles without touching the prompt, which is a subtle and very annoying source of "the prompt suddenly stopped working".
+Prompt tags `<Picture 1>`, `<Video 1>`, `<Audio 1>` are numbered **per type, by slot index, within a fixed category order** — images, then videos with their soundtracks, then standalone audio. Moving an asset between slots reassigns the roles without touching the prompt, which is a subtle and very annoying source of "the prompt suddenly stopped working".
 
 ### How ComfyUI actually feeds the model
 
@@ -125,7 +125,9 @@ Read from `comfy/text_encoders/minimax.py` and `comfy_extras/nodes_minimax_h3.py
 
 **There is no prompt rewriter.** MiniMax's guides describe the output format of their rewriting model, but ComfyUI has no such stage — your text is tokenized verbatim and appended to the token stream. The encoder docstring is explicit: *"The H3 presentation is NOT chat-templated: token ids are raw prompt/label text (no special tokens)"*. So writing in the documented format yourself is not optional polish; it is the only way the prompt lands in the distribution the model was trained on.
 
-**ComfyUI injects the reference labels itself, before your prompt, in socket order:**
+**The alignment instruction is not emitted for you.** ComfyUI prepends only the picture label and the image itself. The `For the target video, at 0.00 seconds…` and `How the reference pictures align…` lines from the base guide are *your* text — type them as the first line of the prompt box, then a blank line, then the fields.
+
+**ComfyUI injects the reference labels itself, before your prompt:**
 
 ```
 t2va:   <prompt>
@@ -136,7 +138,16 @@ ref2va: image -> "<Picture i>: " <vision block>
         then <prompt>
 ```
 
-Ordinals are 1-based **per type** and follow connection order. The node's own description says it plainly: *"Use the same tags when prompting."* When you write `<Picture 1>` you are pointing at a label that already exists earlier in the context — which is why rewiring sockets silently reassigns roles.
+Ordinals are 1-based **per type**, and the order is **fixed by category, not by wiring**: all images first, then videos, then standalone audio. The node docstring is explicit — *"References enter the presentation in fixed order: images, then videos (each soundtrack's `<Audio j>` label right before its `<Video k>`), then standalone audio."*
+
+Two practical consequences:
+
+- **A reference video's soundtrack claims `<Audio 1>`**, ahead of any standalone audio clip, and its label sits immediately *before* that video's own `<Video k>`. Attach a soundtrack and your standalone audio silently becomes `<Audio 2>`.
+- **Numbering follows slot index, not the order you wired things.** Moving an image from `ref_image_2` to `ref_image_0` renumbers it, and your prompt now points at the wrong asset without a single character changing.
+
+The node's own description says it plainly: *"Use the same tags when prompting."*
+
+**Slot maxima:** 9 images, 3 videos, 3 video soundtracks, 3 standalone audio. These are auto-grow sockets, so a fresh node showing three image inputs is not the ceiling — connect one and the next appears.
 
 **Reference audio never reaches the text encoder.** Only the bare label `<Audio j>: ` is emitted into the token stream; the waveform is encoded by the audio VAE and handed to the DiT separately. Referring to `<Audio 1>` in the prompt is a pointer, not a description the encoder can read — so audio references cannot carry semantic structure through the prompt path.
 
@@ -155,9 +166,13 @@ Both are wrapped in `min(1, …)`, so neither ever upscales. At the default 1344
 | 1–5.6 MP, short edge ≤ 2048 | shrunk to 1.03 MP | untouched |
 | short edge > 2048 (a phone original at 3000 × 4000) | shrunk to ~1 MP | short edge held at 2048 |
 
-**Always set `max`.** It is never worse than `match` — only equal or larger — so there is no losing case.
+**Set `max` when you care about likeness** — it is never *worse* than `match` for fidelity, only equal or better.
 
-But it only *does* anything above about a megapixel. Feed a screenshot or a saved social-media image at 800 × 1000 and the two settings produce byte-identical results; the fix there is a higher-resolution source, not a different setting. The cost of `max` is real though: more reference pixels means more vision tokens into Qwen, so if a run OOMs right after you switch, this is the parameter that did it.
+But weigh the cost, because the node's own tooltip is blunt about it: *"Reference tokens ride through every sampling step, so 'max' can be **several times slower**."* This is not merely a VRAM bump — those tokens are re-attended at every one of the 20 steps. On a large reference set the difference is minutes per clip.
+
+And it only *does* anything above about a megapixel. Feed a screenshot or a saved social-media image at 800 × 1000 and the two settings produce byte-identical results at identical speed; the fix there is a higher-resolution source, not a different setting.
+
+Practical order: iterate motion and composition on `match`, switch to `max` for the final render once the shot is right. Paying several times the render cost on throwaway test generations is the wrong trade.
 
 **Native canvas.** 768 short edge with a 768 × 1344 area cap, each axis rounded to a multiple of 32. The template's 1344 × 768 is exactly that cap.
 

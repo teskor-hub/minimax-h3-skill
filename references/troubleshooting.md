@@ -106,7 +106,7 @@ These are empirical. None of them appear in MiniMax's own guides.
 
 ## Reference roles swapped without a prompt change
 
-**Cause.** Labels are numbered by **socket connection order** on the node, not by filename. Rewiring reassigns them.
+**Cause.** Labels are numbered **per type, by slot index, inside a fixed category order** — images, then videos, then standalone audio — not by filename or by the sequence in which you dragged the wires. Moving an asset to a different slot renumbers it. A reference video's soundtrack also claims `<Audio 1>` ahead of any standalone clip.
 
 **Fix.** Check the wiring order before blaming the prompt.
 

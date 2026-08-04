@@ -15,6 +15,20 @@ This skill follows MiniMax's own prompt-writing guides and adds the failure mode
 - `references/troubleshooting.md` — symptom → cause → fix, from real failures
 - `references/comfyui.md` — checkpoints, quants, VRAM, node-by-node settings
 
+## 0. Before writing a prompt
+
+H3 prompts are long and expensive to iterate, and the wrong mode wastes the whole render. Ask rather than guess when any of these is unclear — one question up front is cheaper than a bad eight-second generation:
+
+- **Which mode?** If the user has an image, establish whether it is a *frame* (I2VA/FL2VA/L2VA) or a *reference* (R2V). This is the single most consequential fork and users rarely state it. "Do you want the video to literally start from this photo, or just to feature this person?" settles it.
+- **Which assets exist?** How many reference images, whether there is a reference video or audio, and what each is supposed to contribute. A reference with no assigned role is the top R2V failure.
+- **Duration.** Frame count snaps to a grid and the timeline must match it; a prompt written for 10 s rendered at 124 frames is crushed into 5.
+- **What must not change** — identity anchors, wardrobe, location, grain.
+- **Whether a real camera move is required**, since that is the weakest axis and may need a reference video or a different mode.
+
+State a recommendation rather than only listing options, and say plainly when a request will not work as asked — for example a back view demanded from a frontal close-up through I2VA. Flag the trade-off, propose the mode that does work, and proceed.
+
+Two numbers in §6 come from community write-ups rather than MiniMax or the ComfyUI source: the 2K / 1440-short-edge output cap and the 7000-character prompt field. Treat them as approximate and do not present them as documented.
+
 ## 1. Pick the mode
 
 | User wants | Official mode | Checkpoint |
@@ -127,7 +141,11 @@ Output up to 2K (short edge 1440), 24 fps, 5–15 s. Prompt field 7000 character
 
 **There is no rewriter.** MiniMax's guides describe the output of their own rewriting model, but ComfyUI tokenizes your text verbatim — not chat-templated, no special tokens. Writing in the documented format yourself is therefore the only way to land in the training distribution.
 
-**ComfyUI injects the reference labels itself**, before your prompt, in socket connection order: `"<Picture i>: "` then the image, `"<Video k>: "` then the clip's 2-fps frame blocks with `<T.T seconds>` timestamps, `"<Audio j>: "` as a bare label. Ordinals are 1-based per type. When you write `<Picture 1>` you are pointing at a label that already exists in the context — which is why rewiring sockets reassigns roles without touching the prompt.
+**The alignment instruction is not emitted for you.** ComfyUI prepends only `"<Picture 1>: "` and the image. The `For the target video, at 0.00 seconds…` and `How the reference pictures align…` lines from the guide are *your* text — type them as the first line of the prompt box, followed by a blank line.
+
+**ComfyUI injects the reference labels itself**, before your prompt, in a **fixed category order**: all images, then videos — each video's soundtrack label placed immediately *before* its own `<Video k>` — then standalone audio. Ordinals are 1-based per type and follow slot number, not the order you happened to wire things. Two consequences: a video's soundtrack takes `<Audio 1>` ahead of any standalone audio, and moving an image from `ref_image_2` to `ref_image_0` renumbers it without touching your prompt. When you write `<Picture 1>` you are pointing at a label that already exists in the context.
+
+Slot maxima on the node: **9 images, 3 videos, 3 video soundtracks, 3 standalone audio.** The sockets auto-grow, so a fresh node showing three image inputs is not the limit.
 
 **Reference audio never reaches the text encoder** — only its label does; the waveform goes to the DiT separately. **Reference video reaches the encoder at 2 fps**, so a 5-second clip arrives as roughly ten frames.
 
