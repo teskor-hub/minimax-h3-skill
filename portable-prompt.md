@@ -145,6 +145,24 @@ The same applies to any hard beat that keeps getting skipped: the model pads wit
 cheap event it knows (firing three times instead of falling once). Give the hard beat
 consequences to render and the cheap one nothing to repeat into.
 
+**Structure beats instruction — this is the master rule.** Anything you can make
+impossible by construction should be made impossible by construction rather than
+forbidden in words. A second shot is prevented by a lowered muzzle and drifting smoke,
+not by `no second shot`. A subject spinning instead of the camera is prevented by
+describing background parallax, not by `she does not turn`. A reference video bleeding
+its actor into the output is prevented by choosing a reference with no person in frame,
+not by `do not take the person from <Video 1>`. Every ban is a text instruction
+competing against a data signal, with no negative channel at CFG 1 to enforce it, and
+the data usually wins.
+
+**References compete on every axis.** Reference video and reference stills enter the
+model through the same channel, as image batches — there is no architectural split
+between "this one carries identity" and "this one carries motion". That split exists
+only in your prompt text. So a reference video containing a person is dozens of frames
+of a face fighting your single reference still, and it usually wins. Assign every
+reference an explicit job, state what *not* to take from each, and where possible pick
+references that cannot compete in the first place.
+
 **One camera move per beat.** Stacked equal-weight moves collapse into mush.
 
 **Do not mix modes.** First/last frames and references are separate conditioning

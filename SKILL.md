@@ -79,6 +79,8 @@ Budget 1–3 beats per 5 seconds. Match beat count to duration instead of paddin
 
 **Do not mix modes.** First/last frames and references are separate conditioning paths; asking R2V to treat `<Picture 2>` as an end frame does nothing — there is no terminal-frame mechanism in `ref2va`.
 
+**Structure beats instruction.** Anything you can make impossible by construction should be made impossible by construction rather than forbidden in words. A second shot is prevented by a lowered muzzle and drifting smoke, not by `no second shot`. A subject spinning instead of the camera is prevented by describing background parallax, not by `she does not turn`. A reference video bleeding its actor into the output is prevented by using a reference with no person in frame, not by `do not take the person from <Video 1>`. Every ban is a text instruction competing against a data signal, with no negative channel at CFG 1 to enforce it — and the data usually wins.
+
 **Iterate one variable at a time.** Change the identity note, the motion note, the camera note, or a constraint — never the whole prompt — and hold the seed fixed while doing it.
 
 ## 4. Limits

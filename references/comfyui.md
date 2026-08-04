@@ -118,3 +118,22 @@ CreateVideo         24 fps, bit_depth 8
 `MiniMaxH3ReferenceToVideo` accepts up to 9 images, 3 videos and 3 audio clips, **12 files total**. Reference video and audio are 2–15 s each, 15 s combined. Standalone audio is rejected — it must accompany at least one image or video.
 
 Prompt tags `<Picture 1>`, `<Video 1>`, `<Audio 1>` are numbered by **socket connection order**. Rewiring the inputs reassigns the roles without touching the prompt, which is a subtle and very annoying source of "the prompt suddenly stopped working".
+
+### Socket types, and what they imply
+
+```
+ref_images.ref_image_0              IMAGE
+ref_videos.ref_video_0              IMAGE   ← frames, not VIDEO
+ref_video_audios.ref_video_audio_0  AUDIO   ← that video's soundtrack, supplied separately
+ref_audios.ref_audio_0              AUDIO
+```
+
+**`ref_video_0` is typed `IMAGE`, not `VIDEO`.** Two consequences.
+
+First, audio is not extracted automatically — that is why `ref_video_audio_0` exists as its own socket. Load the clip with `LoadVideo` → `GetVideoComponents` (splits `VIDEO` into `IMAGE`, `AUDIO`, fps) or with `VHS_LoadVideo`, then wire the frames and the audio separately. The stock R2V template ships only `LoadImage` nodes; you add the video loader yourself. Reference frames also cost VRAM directly, so trim the clip to the part that carries the motion rather than feeding it whole.
+
+Second, and more important: reference video and reference stills enter the model **through the same channel**, as batches of images into Qwen3VL. There is no architectural separation between "this input carries identity" and "this input carries motion" — that split exists **only in the prompt text**. Unlike a pose ControlNet, where motion arrives on a separate spatial path and physically cannot carry appearance, here every reference competes on every axis.
+
+So a reference video containing a person is a sustained identity signal — dozens of frames of a face — against a single still. The frames usually win, and the video's wardrobe and face bleed into the output. `Do not take the person or the wardrobe from <Video 1>` shifts the odds but does not settle it: it is a text instruction fighting a data signal, with no negative channel at CFG 1 to subtract it.
+
+The reliable fix is structural, not verbal — remove the competing signal instead of forbidding it. If you want camera motion, shoot the reference orbiting an object with no person in frame. Otherwise crop the reference so the face never appears, and keep the clip short.
