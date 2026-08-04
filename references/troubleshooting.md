@@ -88,9 +88,9 @@ These are empirical. None of them appear in MiniMax's own guides.
 
 ## Motion is rushed or teleports between poses
 
-**Cause.** The written timeline is longer than the rendered length. 124 frames at 24 fps is 5.2 s.
+**Cause.** The written timeline is longer than the rendered length. 124 frames at 24 fps is 5.17 s.
 
-**Fix.** Match frame count to the timeline, or cut shots. Long camera travel wants 180–240 frames.
+**Fix.** Match frame count to the timeline, or cut shots. Long camera travel wants 192–243 frames. Note that `length` snaps **up** to the nearest `17k+5` value without telling you — 144 silently becomes 158, 168 becomes 175. Pick from the grid directly: 124, 141, 158, 175, 192, 209, 226, 243, 260, 277, 294, 311, 328, 345, 362.
 
 ## The output is cut up when one continuous take was wanted
 

@@ -72,6 +72,8 @@ The ID comes from the target video's speaker order and is never independently as
 
 `<Video N>` and `<Audio N>` are numbered **independently** — the same file can be `<Video 1>` and `<Audio 2>`, and different indices do not prevent a shared source. A reference video does not create an `<Audio N>` merely because the file contains sound.
 
+> **How these actually arrive.** ComfyUI emits the labels into the token stream itself, before your prompt, in socket order — so your tags point at labels that already exist in context. Reference images go in whole; **reference video is downsampled to 2 fps** and split into 2-frame blocks with `<T.T seconds>` timestamps, so a 5-second clip reaches the encoder as about ten frames; and **reference audio never reaches the encoder at all** — only the bare `<Audio j>: ` label does, with the waveform routed to the DiT separately. An audio reference therefore cannot carry semantic structure through the prompt path, however you describe it. See `comfyui.md`.
+
 ## 2. summary
 
 One short English paragraph, opening with a bracketed task type.

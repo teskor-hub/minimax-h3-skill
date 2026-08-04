@@ -119,6 +119,63 @@ CreateVideo         24 fps, bit_depth 8
 
 Prompt tags `<Picture 1>`, `<Video 1>`, `<Audio 1>` are numbered by **socket connection order**. Rewiring the inputs reassigns the roles without touching the prompt, which is a subtle and very annoying source of "the prompt suddenly stopped working".
 
+### How ComfyUI actually feeds the model
+
+Read from `comfy/text_encoders/minimax.py` and `comfy_extras/nodes_minimax_h3.py`. This settles several things that are otherwise guesswork.
+
+**There is no prompt rewriter.** MiniMax's guides describe the output format of their rewriting model, but ComfyUI has no such stage — your text is tokenized verbatim and appended to the token stream. The encoder docstring is explicit: *"The H3 presentation is NOT chat-templated: token ids are raw prompt/label text (no special tokens)"*. So writing in the documented format yourself is not optional polish; it is the only way the prompt lands in the distribution the model was trained on.
+
+**ComfyUI injects the reference labels itself, before your prompt, in socket order:**
+
+```
+t2va:   <prompt>
+fl2va:  "<Picture 1>: " <vision block> ["<Picture 2>: " <vision block>] <prompt>
+ref2va: image -> "<Picture i>: " <vision block>
+        audio -> "<Audio j>: "                     (audio never enters Qwen)
+        video -> "<Video k>: " then, per 2-frame block, "<T.T seconds>" <vision block>
+        then <prompt>
+```
+
+Ordinals are 1-based **per type** and follow connection order. The node's own description says it plainly: *"Use the same tags when prompting."* When you write `<Picture 1>` you are pointing at a label that already exists earlier in the context — which is why rewiring sockets silently reassigns roles.
+
+**Reference audio never reaches the text encoder.** Only the bare label `<Audio j>: ` is emitted into the token stream; the waveform is encoded by the audio VAE and handed to the DiT separately. Referring to `<Audio 1>` in the prompt is a pointer, not a description the encoder can read — so audio references cannot carry semantic structure through the prompt path.
+
+**Reference video is downsampled to 2 fps for the encoder.** Frames are sampled every 12th frame and grouped into 2-frame temporal blocks, each preceded by a `<T.T seconds>` timestamp. A 5-second clip therefore reaches Qwen as roughly ten frames in five vision blocks — still more identity signal than a single still, but far less than the full clip. Reference videos need at least 5 frames.
+
+**`ref_image_size` in exact terms**, both down-scale only:
+
+- `match` — `scale = min(1, sqrt((width × height) / (w × h)))`, aspect-preserving, to the generation's pixel *area*
+- `max` — `scale = min(1, 2048 / min(w, h))`, short edge up to 2048 px
+
+Neither upscales. A reference smaller than the generation canvas is unaffected by the setting, so `max` only buys you anything when the source image is genuinely large.
+
+**Native canvas.** 768 short edge with a 768 × 1344 area cap, each axis rounded to a multiple of 32. The template's 1344 × 768 is exactly that cap.
+
+**Latents.** Video `[B, 24, T, H/16, W/16]` and audio `[B, 32, 2, T₄₀]` as a nested pair; audio runs on a 40 fps latent grid. Keyframe and reference condition latents are re-injected every step and never denoised.
+
+### Length snaps to a 17k+5 grid
+
+`align_frame_count` advances `n` until `n % 17 == 5`, and the widget steps by 17. Valid frame counts are therefore 5, 22, 39 … and at 24 fps:
+
+| Frames | Duration | | Frames | Duration |
+|---|---|---|---|---|
+| 124 | 5.17 s | | 243 | 10.13 s |
+| 141 | 5.88 s | | 260 | 10.83 s |
+| 158 | 6.58 s | | 277 | 11.54 s |
+| 175 | 7.29 s | | 294 | 12.25 s |
+| 192 | 8.00 s | | 311 | 12.96 s |
+| 209 | 8.71 s | | 328 | 13.67 s |
+| 226 | 9.42 s | | 345 | 14.38 s |
+|  |  | | 362 | 15.08 s |
+
+**The trained range is roughly 124–362 frames** — about 5.2 to 15.1 seconds. The node accepts up to 3600, but the tooltip marks anything longer as untested, and below 124 is equally out of distribution.
+
+Anything off the grid is snapped **up** silently. Multiples of 4 are not the rule: 144 becomes 158 and 168 becomes 175 without telling you.
+
+### MiniMax H3 Sigma Shift
+
+An extra node the stock template does not wire up: `MiniMaxH3SigmaShift`, under `model/patch/minimax`, with `shift_video` defaulting to **12.0** and `shift_audio` to **3.0**. The video shift drives the sampler's sigma schedule; the DiT inverts it to the shared base grid and derives the audio schedule from it. Worth an A/B at a fixed seed if motion feels over- or under-cooked — it moves where sampling spends its steps, which no scheduler swap can do.
+
 ### Socket types, and what they imply
 
 ```

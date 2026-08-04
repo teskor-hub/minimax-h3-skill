@@ -119,4 +119,14 @@ These are empirical — none of them appear in MiniMax's guides.
 
 Output up to 2K (short edge 1440), 24 fps, 5–15 s. Prompt field 7000 characters. `detailed_description` runs 350–500 English words for generation tasks. Full-reference accepts 9 images + 3 videos + 3 audio clips, 12 files maximum; reference video and audio are 2–15 s each, 15 s combined; standalone audio is rejected and must accompany at least one image or video.
 
-Frame count sets duration at 24 fps — use multiples of 4. 124 ≈ 5.2 s · 144 = 6 s · 168 = 7 s · 192 = 8 s.
+**Frame count snaps to a 17k+5 grid**, and anything off it is rounded up silently — multiples of 4 are *not* the rule. Valid values at 24 fps: 124 = 5.17 s · 141 = 5.88 s · 158 = 6.58 s · 175 = 7.29 s · 192 = 8.00 s · 209 = 8.71 s · 226 = 9.42 s · 243 = 10.13 s · 260 = 10.83 s · 277 = 11.54 s · 294 = 12.25 s · 311 = 12.96 s · 328 = 13.67 s · 345 = 14.38 s · 362 = 15.08 s. The trained range is roughly **124–362**; outside it the model is out of distribution.
+
+## 7. What ComfyUI does with your prompt
+
+**There is no rewriter.** MiniMax's guides describe the output of their own rewriting model, but ComfyUI tokenizes your text verbatim — not chat-templated, no special tokens. Writing in the documented format yourself is therefore the only way to land in the training distribution.
+
+**ComfyUI injects the reference labels itself**, before your prompt, in socket connection order: `"<Picture i>: "` then the image, `"<Video k>: "` then the clip's 2-fps frame blocks with `<T.T seconds>` timestamps, `"<Audio j>: "` as a bare label. Ordinals are 1-based per type. When you write `<Picture 1>` you are pointing at a label that already exists in the context — which is why rewiring sockets reassigns roles without touching the prompt.
+
+**Reference audio never reaches the text encoder** — only its label does; the waveform goes to the DiT separately. **Reference video reaches the encoder at 2 fps**, so a 5-second clip arrives as roughly ten frames.
+
+See `references/comfyui.md` for the exact `ref_image_size` formulas, the native canvas, and the undocumented `MiniMaxH3SigmaShift` node.

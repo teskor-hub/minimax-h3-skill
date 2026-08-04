@@ -209,8 +209,20 @@ the ground.
 
 2K (short edge 1440), 24 fps, 5–15 s. Prompt field 7000 characters. `detailed_description`
 350–500 words. Full-reference: 9 images + 3 videos + 3 audio, 12 files max; reference
-video and audio 2–15 s each, 15 s combined; standalone audio rejected. Frame count sets
-duration at 24 fps, use multiples of 4 — 124 ≈ 5.2 s · 144 = 6 s · 168 = 7 s · 192 = 8 s.
+video and audio 2–15 s each, 15 s combined; standalone audio rejected.
+
+Frame count snaps to a **17k+5 grid** and anything off it is rounded up silently —
+multiples of 4 are not the rule. At 24 fps: 124 = 5.17 s · 141 = 5.88 s · 158 = 6.58 s ·
+175 = 7.29 s · 192 = 8.00 s · 209 = 8.71 s · 226 = 9.42 s · 243 = 10.13 s · 260 = 10.83 s ·
+277 = 11.54 s · 294 = 12.25 s · 311 = 12.96 s · 328 = 13.67 s · 345 = 14.38 s · 362 = 15.08 s.
+The trained range is roughly 124–362.
+
+Two mechanics worth knowing when you write the prompt: the runtime **injects the
+reference labels itself** before your text, in socket order — `<Picture i>:` then the
+image, `<Video k>:` then the clip sampled at 2 fps with `<T.T seconds>` timestamps,
+`<Audio j>:` as a bare label. So your tags point at labels that already exist in context.
+And **reference audio never reaches the text encoder** — only its label does, so an audio
+reference cannot carry structure through the prompt path.
 
 ## Symptom → fix
 
