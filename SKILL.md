@@ -45,7 +45,11 @@ Decision rule: if the value is in **the picture** — its room, light, grain, co
 
 A shot needing a viewpoint that does not exist in the source photo (back view, wide, different room) is a full-reference job. Forcing it through I2VA makes the model hallucinate the missing body while rotating, which is where identity collapses.
 
-**There is no video-to-video, and therefore no character swap.** Every H3 node in ComfyUI starts sampling from an empty latent; keyframe and reference latents are conditioning re-injected each step and never denoised. No frame of a reference video survives into the output. Asking to "replace the person in this clip" cannot be satisfied — the answer is a new generation that approximately follows the reference's motion, with everything else rebuilt. The `video editing` and `video continuation` task types in the reference guide belong to MiniMax's own pipeline; ComfyUI implements only `reference generation`. Say this plainly when a user asks for a swap rather than producing a prompt that quietly cannot work.
+**There is no video-to-video, and therefore no frame-preserving character swap.** Every H3 node in ComfyUI starts sampling from an empty latent; keyframe and reference latents are conditioning re-injected each step and never denoised. No frame of a reference video survives into the output. The `video editing` and `video continuation` task types in the reference guide belong to MiniMax's own pipeline; ComfyUI implements only `reference generation`.
+
+**But do not over-correct — the useful version of that request is the tool's main purpose.** "A new video in which the person resembles my reference photo and moves the way this clip does" is exactly `reference generation`, and it works. Expect recognisable likeness rather than face-swap identity: H3 is a generative video model, not an identity adapter. Distinguish the two explicitly when a user says "swap", because they usually mean the second one and will be wrongly discouraged by a flat no.
+
+Likeness improves, in order of payoff: two to four reference photos of the same person from different angles, all merged into one `<Subject N>`; identity in `<Subject N>` rather than a standalone `<Picture N>`; `ref_image_size: max` on the final render; short camera travel, so less unseen geometry has to be invented; a higher-precision text encoder if VRAM allows, since identity flows through it in reference mode.
 
 ## 2. Output format
 
