@@ -27,6 +27,8 @@ H3 prompts are long and expensive to iterate, and the wrong mode wastes the whol
 
 State a recommendation rather than only listing options, and say plainly when a request will not work as asked — for example a back view demanded from a frontal close-up through I2VA. Flag the trade-off, propose the mode that does work, and proceed.
 
+**Always emit the complete prompt, in one code block, ready to paste as-is** — including on follow-ups that change a single word. Never reply with only the edited section, never "replace the beats block with this", never `[rest unchanged]` or `...` standing in for text already written. The user copies and pastes; a fragment forces a manual merge and invites typos. Put nothing inside the block but the prompt itself: the alignment instruction line where the mode requires one, then every section in order, complete. Explanation of what changed goes after the block, in prose, as brief as the change deserves. Length is never a reason to abbreviate.
+
 Two numbers in §6 come from community write-ups rather than MiniMax or the ComfyUI source: the 2K / 1440-short-edge output cap and the 7000-character prompt field. Treat them as approximate and do not present them as documented.
 
 ## 1. Pick the mode
