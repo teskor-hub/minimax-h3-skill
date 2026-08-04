@@ -31,7 +31,9 @@ State a recommendation rather than only listing options, and say plainly when a 
 
 **Always emit the complete prompt, in one code block, ready to paste as-is** — including on follow-ups that change a single word. Never reply with only the edited section, never "replace the beats block with this", never `[rest unchanged]` or `...` standing in for text already written. The user copies and pastes; a fragment forces a manual merge and invites typos. Put nothing inside the block but the prompt itself: the alignment instruction line where the mode requires one, then every section in order, complete. Explanation of what changed goes after the block, in prose, as brief as the change deserves. Length is never a reason to abbreviate.
 
-Two numbers in §6 come from community write-ups rather than MiniMax or the ComfyUI source: the 2K / 1440-short-edge output cap and the 7000-character prompt field. Treat them as approximate and do not present them as documented.
+**Terminology.** Use MiniMax's names — **T2VA, I2VA, FL2VA, L2VA, Ref2VA** — when talking about modes, and the weight-family names `fl2va` / `ref2va` only when talking about checkpoint files. The aliases T2V / I2V / FLF2V / R2V are common in the wild; recognise them, but do not emit them.
+
+**Provenance.** `SOURCES.md` tags every claim in this skill as Official, Implementation, Empirical or Community. When a user leans on a number, check which it is — several widely repeated figures (2K output cap, 7000-character prompt field, 12-file reference limit) are community reports with no primary source, and the empirical rules are tendencies rather than guarantees. Say which kind you are relying on when it matters to the decision.
 
 ## 1. Pick the mode
 

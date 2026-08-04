@@ -76,6 +76,19 @@ The ID comes from the target video's speaker order and is never independently as
 
 > **How these actually arrive.** ComfyUI emits the labels into the token stream itself, before your prompt, in a fixed category order — all images, then videos with each soundtrack's `<Audio j>` label immediately before its own `<Video k>`, then standalone audio — numbered per type by slot index rather than by the order you wired them. So your tags point at labels that already exist in context, and attaching a video soundtrack pushes any standalone audio to `<Audio 2>`. Reference images go in whole; **reference video is downsampled to 2 fps** and split into 2-frame blocks with `<T.T seconds>` timestamps, so a 5-second clip reaches the encoder as about ten frames; and **reference audio never reaches the encoder at all** — only the bare `<Audio j>: ` label does, with the waveform routed to the DiT separately. An audio reference therefore cannot carry semantic structure through the prompt path, however you describe it. See `comfyui.md`.
 
+### Assign every asset a role before writing
+
+The top failure in this mode is an attached reference with no stated job. Before drafting a single line, account for every connected input:
+
+| Connected asset | Slot | What it supplies | Output label | Retention |
+|---|---|---|---|---|
+| portrait.jpg | `ref_image_0` | face, hair, build | `<Subject 1>` | `fully_preserved` |
+| coat.jpg | `ref_image_1` | wardrobe | `<Subject 1>` | `fully_preserved` |
+| orbit.mp4 | `ref_video_0` | camera path and pacing | `<Video 1>` | `weak_reference` |
+| voice.wav | `ref_audio_0` | voice timbre | `<Audio 1>` | `reference` |
+
+**Do not start the prompt until every attached asset appears in that table**, either with a role or explicitly noted as unused. Two assets landing on the same axis — two images that both read as a face, or a video whose person competes with a portrait — must be resolved here, by merging them into one subject with stated contributions or by dropping one. Resolving it later, in prose, does not work.
+
 ## 2. summary
 
 One short English paragraph, opening with a bracketed task type.

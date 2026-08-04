@@ -50,7 +50,7 @@ Ask in plain language:
 
 > Write me an R2V prompt — this photo of a woman, the viewpoint rises above her head and she looks up into it
 
-and you get a prompt in the five-block structure H3 expects, with the device deliberately absent (it's the viewpoint, so it should never be rendered), hands cropped at the frame edge (where extra fingers come from), and camera motion separated from body motion (joined, they resolve into a prop).
+and you get a prompt in the six-section full-reference structure H3 was trained on, with the device deliberately absent (it's the viewpoint, so it should never be rendered), hands cropped at the frame edge (where extra fingers come from), and camera motion separated from body motion (joined, they resolve into a prop).
 
 Ask which model to download and it answers from your actual VRAM, not from a generic table.
 
@@ -89,7 +89,7 @@ Ask which model to download and it answers from your actual VRAM, not from a gen
 | Diffusion (`fl2va` / `ref2va`) | 66.28 GB | 34.04 GB | 20.97 GB | — |
 | Text encoder (Qwen3-VL-32B) | 51.51 GB | 27.14 GB | — | 15.69 GB |
 
-Video VAE `fp16` 5.21 GB and audio VAE `fp32` 0.61 GB are required in every configuration. The text encoder and both VAEs are **shared across all four modes** — switching between I2V and R2V changes only the diffusion checkpoint.
+Video VAE `fp16` 5.21 GB and audio VAE `fp32` 0.61 GB are required in every configuration. The text encoder and both VAEs are **shared across all four modes** — switching between I2VA and Ref2VA changes only the diffusion checkpoint.
 
 Output: up to 2K (short edge 1440), 24 fps, 5–15 s. R2V accepts 9 images + 3 videos + 3 audio clips, 12 files maximum.
 

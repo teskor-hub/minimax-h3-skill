@@ -19,8 +19,8 @@ Two checkpoint families. **Different weights, not modes.**
 | `minimax_h3_ref2va_pruned_int8_convrot.safetensors` | 20.97 GB |
 | `minimax_h3_ref2va_pruned_fp8_scaled.safetensors` | 20.96 GB |
 
-- **`fl2va`** — first/last frame → video+audio. Powers T2V, I2V and FLF2V.
-- **`ref2va`** — reference → video+audio. Powers R2V.
+- **`fl2va`** — first/last frame → video+audio. Powers T2VA, I2VA, FL2VA and L2VA.
+- **`ref2va`** — reference → video+audio. Powers full-reference (Ref2VA).
 - `va` = video+audio, because H3 generates both in one pass.
 - **`convrot`** — rotation-based quantisation (Hadamard/QuaRot family). Holds quality better than plain INT8 at the same bit width and does not need FP8 hardware.
 - **`pruned`** — drops precomputed adaLN curve tables, roughly 40 % smaller than the same INT8 checkpoint.
@@ -28,7 +28,7 @@ Two checkpoint families. **Different weights, not modes.**
 
 ### Text encoder — `models/text_encoders/`
 
-Qwen3-VL-32B, **shared by all four modes**. Switching between I2V and R2V changes only the diffusion checkpoint.
+Qwen3-VL-32B, **shared by every mode**. Switching between I2VA and Ref2VA changes only the diffusion checkpoint.
 
 | File | Size |
 |---|---|
@@ -38,7 +38,7 @@ Qwen3-VL-32B, **shared by all four modes**. Switching between I2V and R2V change
 
 `nvfp4_awq` is NVIDIA FP4 with activation-aware weight quantisation — natively fast on Blackwell, emulated (slow) on Ampere.
 
-**Encoder precision matters more in R2V than in I2V.** Reference images are tagged in the prompt as `<Picture 1>`, i.e. they enter as multimodal context through the VLM. Identity flows through the encoder. In I2V the conditioning frame enters through the VAE latent path instead, so the encoder carries less of the likeness.
+**Encoder precision matters more in Ref2VA than in I2VA.** Reference images are tagged in the prompt as `<Picture 1>`, i.e. they enter as multimodal context through the VLM. Identity flows through the encoder. In I2VA the conditioning frame enters through the VAE latent path instead, so the encoder carries less of the likeness.
 
 ### VAEs — `models/vae/`
 
