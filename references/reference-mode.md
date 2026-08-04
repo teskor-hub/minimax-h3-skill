@@ -37,7 +37,7 @@ It is a **content unit that will appear in the target video**, not the source fi
 
 One subject, two assets, each with a stated contribution.
 
-Note what this does *not* rely on. Scoping a reference is not about whether you exclude things — it is about **where the exclusion lives**. Here the video is simply never given the identity role, so nothing has to be taken away from it later. Where an explicit exclusion is genuinely needed, it belongs in `retention_analysis` behind a fidelity marker, which is an enum the format defines rather than a plea in prose. `do not take the person from <Video 1>` written into `detailed_description` is prose competing against a data signal, and it loses; `<Video 1> …: weak_reference - …` is a declaration the format expects, and it holds.
+Note what this does *not* rely on. Scoping a reference is not about whether you exclude things — it is about **where the exclusion lives**. Here the video is simply never given the identity role, so nothing has to be taken away from it later. Where an explicit exclusion is genuinely needed, it belongs in `retention_analysis` behind a fidelity marker from MiniMax's documented vocabulary. Be clear about what that does and does not mean: ComfyUI parses nothing, so the marker arrives as ordinary prompt tokens like everything else. The claim that scoping there works better than the same words in `detailed_description` is **empirical**, not a mechanical guarantee — see `SOURCES.md`.
 
 ### `<Picture N>` — concrete frame anchors only
 
@@ -138,7 +138,7 @@ One line per label, fidelity stated with a fixed marker.
 
 Choose a marker **only within the role already defined for that label**. Newly added actions, backgrounds or plot events in the target video are not losses of reference fidelity.
 
-This section is where role scoping actually lives. `<Video 1> (camera movement and pacing): weak_reference - only the travelling path and handheld rhythm are followed; none of its people, wardrobe, location or lighting appear.` does the work that a `do not take…` sentence in the body never does.
+Pick the marker for the fidelity you actually want, not reflexively `weak_reference`: `fully_preserved` when the defined role should be followed completely, `partially_preserved` when only part is retained, `weak_reference` only when broad similarity is the intent. Borrowing an exact camera path is closer to `partially_preserved` than to `weak_reference`.
 
 ## 4. detailed_description
 

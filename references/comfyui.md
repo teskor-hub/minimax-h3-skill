@@ -144,7 +144,7 @@ CreateVideo         24 fps, bit_depth 8
 
 **Standalone audio is accepted on its own.** The execution path iterates `ref_audios` unconditionally and appends an audio ref block; there is no check requiring an accompanying image or video. The widely repeated "standalone audio is rejected" is a community claim contradicted by the source.
 
-**Reference video is truncated to your target length.** A clip longer than `length` is cut to it, then trimmed *down* until its frame count also satisfies `17k+5`. Only a 5-frame minimum is enforced — the 2–15 s figure is a tooltip recommendation, not a check. There is no combined video-plus-audio duration cap in the code, and no 12-file total.
+**Reference video is truncated to your target frame count.** `length` is first snapped *up* to the `17k+5` grid; a clip longer than that aligned count is cut to it, then trimmed *down* until its own frame count also satisfies `17k+5`. Only a 5-frame minimum is enforced — the 2–15 s figure is a tooltip recommendation, not a check. There is no combined video-plus-audio duration cap in the code, and no 12-file total.
 
 Reference videos are also resized to the model's native canvas — 768 short edge, 768 × 1344 area cap, each axis rounded to 32 — which is why the default generation size of 1344 × 768 sits exactly on that cap. The generation width and height themselves are plain widgets and are not clamped to it.
 

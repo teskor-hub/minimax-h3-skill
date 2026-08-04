@@ -5,12 +5,12 @@ description: Write, debug and structure prompts for MiniMax H3 video generation 
 
 # MiniMax H3 — prompting and ComfyUI setup
 
-MiniMax H3 is an open-weight omni-modal video model: it generates video **and native stereo audio in a single forward pass**, up to 2K / 24fps / 15s. It ships as two checkpoints — `fl2va` (frame-conditioned) and `ref2va` (reference-conditioned) — which are different weights, not modes of one model.
+MiniMax H3 is an open-weight omni-modal video model: it generates video **and native stereo audio in a single forward pass**, at 24 fps, with a trained clip length of roughly 5–15 s. It ships as two checkpoints — `fl2va` (frame-conditioned) and `ref2va` (reference-conditioned) — which are different weights, not modes of one model.
 
 This skill follows MiniMax's own prompt-writing guides and adds the failure modes those guides do not cover.
 
 - `references/prompting.md` — the official output format for T2VA / I2VA / FL2VA / L2VA
-- `references/reference-mode.md` — the official six-section format for full-reference (R2V)
+- `references/reference-mode.md` — the official six-section format for full reference (Ref2VA)
 - `references/templates.md` — fill-in templates for every mode
 - `references/troubleshooting.md` — symptom → cause → fix, from real failures
 - `references/comfyui.md` — checkpoints, quants, VRAM, node-by-node settings
@@ -19,8 +19,8 @@ This skill follows MiniMax's own prompt-writing guides and adds the failure mode
 
 H3 prompts are long and expensive to iterate, and the wrong mode wastes the whole render. Ask rather than guess when any of these is unclear — one question up front is cheaper than a bad eight-second generation:
 
-- **Which mode?** If the user has an image, establish whether it is a *frame* (I2VA/FL2VA/L2VA) or a *reference* (R2V). This is the single most consequential fork and users rarely state it. "Do you want the video to literally start from this photo, or just to feature this person?" settles it.
-- **Which assets exist?** How many reference images, whether there is a reference video or audio, and what each is supposed to contribute. A reference with no assigned role is the top R2V failure.
+- **Which mode?** If the user has an image, establish whether it is a *frame* (I2VA/FL2VA/L2VA) or a *reference* (Ref2VA). This is the single most consequential fork and users rarely state it. "Do you want the video to literally start from this photo, or just to feature this person?" settles it.
+- **Which assets exist?** How many reference images, whether there is a reference video or audio, and what each is supposed to contribute. A reference with no assigned role is the top Ref2VA failure.
 - **Duration.** Frame count snaps to a grid and the timeline must match it; a prompt written for 10 s rendered at 124 frames is crushed into 5.
 - **What must not change** — identity anchors, wardrobe, location, grain.
 - **Whether a real camera move is required**, since that is the weakest axis and may need a reference video or a different mode.
@@ -43,7 +43,7 @@ State a recommendation rather than only listing options, and say plainly when a 
 | **This exact photo** animated forward | I2VA | `fl2va` |
 | A path from frame A to frame B, or a seamless loop | FL2VA | `fl2va` |
 | A shot that *lands on* a given final frame | L2VA | `fl2va` |
-| **This person/object** in a new shot | full-reference (R2V) | `ref2va` |
+| **This person/object** in a new shot | Ref2VA | `ref2va` |
 
 `fl2va` = **f**irst/**l**ast frame → **v**ideo+**a**udio. `ref2va` = **ref**erence → video+audio.
 
@@ -127,7 +127,7 @@ These are empirical — none of them appear in MiniMax's guides.
 
 This is not "never exclude anything" — it is about **where the exclusion lives**. A fidelity marker is an enum the format defines and the model was trained to read; the same words as a sentence in `detailed_description` are prose competing against a data signal, and the data usually wins.
 
-**There is no negative prompt.** The ComfyUI template uses `BasicGuider` — one conditioning input, CFG effectively 1, no negative socket. State the desired condition positively instead. Do not swap in `CFGGuider`: it doubles inference time and H3 was not trained with guidance.
+**There is no negative prompt.** The ComfyUI template uses `BasicGuider` — one conditioning input, CFG effectively 1, no negative socket. State the desired condition positively instead. Do not reach for `CFGGuider` casually: it doubles inference time, and how H3 was trained with respect to guidance is not established by any source here.
 
 **The model cannot count, and bans amplify what they ban.** `exactly one shot` is a token sequence, not a constraint, and `no second shot` puts *second shot* into the conditioning with no negative channel to subtract it. Name an event once, in one shot, with no prohibition attached, then block repetition through scene state.
 
@@ -139,13 +139,13 @@ This is not "never exclude anything" — it is about **where the exclusion lives
 
 **Big physical events need intermediate poses and room in the frame.** "She falls" is an outcome the model smooths away. Give the trajectory, and make sure the framing actually contains the ground.
 
-**One camera move per shot.** Stacked equal-weight moves collapse into mush.
+**One primary camera move per shot.** A secondary tilt or pan that keeps the subject framed during that move is fine — a pedestal up with a compensating tilt down is one operation, not two. What collapses into mush is several independent, equal-weight moves competing in the same shot.
 
 **Iterate one variable at a time**, at a fixed seed.
 
 ## 6. Limits
 
-Output up to 2K (short edge 1440), 24 fps, 5–15 s. Prompt field 7000 characters. `detailed_description` runs 350–500 English words for generation tasks, with documented exceptions: dialogue-dense content departs from the range to fit the spoken timeline, and editing descriptions scale with the source. Full-reference slots in ComfyUI: 9 reference images, 3 reference videos, 3 same-index video soundtracks, 3 standalone audio clips. **Standalone audio is accepted on its own** — the node processes it unconditionally, despite community write-ups claiming otherwise. The reference-video tooltip recommends 2–15 s, but the code enforces only a 5-frame minimum, and a clip longer than your target `length` is truncated to it and then aligned *down* to the `17k+5` grid. No 12-file total or combined-duration cap exists in the source.
+Verified: 24 fps, the `17k+5` frame grid, a trained range of roughly 124–362 frames. Community-reported and **not** found in the primary sources: output up to 2K with a 1440 short edge, and a 7000-character prompt field — do not present either as documented. `detailed_description` runs 350–500 English words for generation tasks, with documented exceptions: dialogue-dense content departs from the range to fit the spoken timeline, and editing descriptions scale with the source. Full-reference slots in ComfyUI: 9 reference images, 3 reference videos, 3 same-index video soundtracks, 3 standalone audio clips. **Standalone audio is accepted on its own** — the node processes it unconditionally, despite community write-ups claiming otherwise. The reference-video tooltip recommends 2–15 s, but the code enforces only a 5-frame minimum, and a clip longer than the *aligned* target frame count is truncated to that, then trimmed *down* until its own frame count also satisfies `17k+5`. No 12-file total or combined-duration cap exists in the source.
 
 **Frame count snaps to a 17k+5 grid**, and anything off it is rounded up silently — multiples of 4 are *not* the rule. Valid values at 24 fps: 124 = 5.17 s · 141 = 5.88 s · 158 = 6.58 s · 175 = 7.29 s · 192 = 8.00 s · 209 = 8.71 s · 226 = 9.42 s · 243 = 10.13 s · 260 = 10.83 s · 277 = 11.54 s · 294 = 12.25 s · 311 = 12.96 s · 328 = 13.67 s · 345 = 14.38 s · 362 = 15.08 s. The trained range is roughly **124–362**; outside it the model is out of distribution.
 

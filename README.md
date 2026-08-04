@@ -1,6 +1,6 @@
 # MiniMax H3 — Claude Code Skill
 
-A Claude Code skill for **MiniMax H3**, the open-weight omni-modal video model that generates video *and* native stereo audio in a single pass. Install it once and Claude stops guessing: it picks the right checkpoint, writes prompts in the structure the model was trained on, and knows why your camera move rendered a physical camera.
+A Claude Code skill for **MiniMax H3**, the open-weight omni-modal video model that generates video *and* native stereo audio in a single pass. Install it once and Claude stops guessing: it picks the right checkpoint, writes prompts in MiniMax's documented rewrite-output structure, and knows why your camera move rendered a physical camera.
 
 Not using Claude Code? The same thing ships as [`portable-prompt.md`](portable-prompt.md) — one block of text you paste into ChatGPT, Grok or anything else.
 
@@ -50,7 +50,7 @@ Ask in plain language:
 
 > Write me an R2V prompt — this photo of a woman, the viewpoint rises above her head and she looks up into it
 
-and you get a prompt in the six-section full-reference structure H3 was trained on, with the device deliberately absent (it's the viewpoint, so it should never be rendered), hands cropped at the frame edge (where extra fingers come from), and camera motion separated from body motion (joined, they resolve into a prop).
+and you get a prompt in MiniMax's documented six-section full-reference structure, with the device deliberately absent (it's the viewpoint, so it should never be rendered), hands cropped at the frame edge (where extra fingers come from), and camera motion separated from body motion (joined, they resolve into a prop).
 
 Ask which model to download and it answers from your actual VRAM, not from a generic table.
 
@@ -72,9 +72,9 @@ Ask which model to download and it answers from your actual VRAM, not from a gen
 
 **Two checkpoints, not two modes.** `fl2va` takes your frame and moves it — animation. `ref2va` takes your subject and shoots a new scene — casting. If the value is in the picture, use `fl2va`. If it's in who's in it, use `ref2va`. Forcing a back view out of a frontal close-up through I2VA is the single most common way to melt a face.
 
-**There is no negative prompt.** The official template uses `BasicGuider` — one conditioning input, CFG effectively 1, no negative socket. Bans have to be rewritten as positive statements of the desired state. Don't swap in `CFGGuider`: it doubles inference time and H3 never saw guidance in training.
+**There is no negative prompt.** The official template uses `BasicGuider` — one conditioning input, CFG effectively 1, no negative socket. Bans have to be rewritten as positive statements of the desired state. Don't reach for `CFGGuider` casually: it doubles inference time, and nothing in the sources establishes how H3 was trained with respect to guidance.
 
-**Steps are the most overrated knob.** `res_multistep` is a higher-order multistep sampler; 20 steps is equivalent to 35–40 on Euler. Going to 30 costs 50 % more time for nothing visible. The setting actually worth tuning on reference-heavy graphs is the *scheduler* — `beta` or `normal` against the default `simple`, at a fixed seed.
+**Steps are probably the most overrated knob.** The stock workflow uses `res_multistep` at 20 steps. The often-quoted equivalence to 35–40 Euler steps is a rule of thumb, not a measurement on this model, and whether 30 steps buy anything visible is untested here. On reference-heavy graphs the *scheduler* is the more promising A/B — `beta` or `normal` against `simple`, at a fixed seed.
 
 **Structure beats instruction.** Anything you can make impossible by construction should be, rather than forbidden in words. A second shot is prevented by a lowered muzzle and drifting smoke, not by `no second shot`. A subject spinning instead of the camera is prevented by describing background parallax, not by `she does not turn`. Every ban is a text instruction competing against a data signal, and the data usually wins.
 

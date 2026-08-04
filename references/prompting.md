@@ -1,6 +1,6 @@
 # The official format — T2VA / I2VA / FL2VA / L2VA
 
-Source: MiniMax's own `VIDEO_PROMPT_WRITING_GUIDE_base_en.md`. This is the shape the model's prompt rewriter emits, so it is the shape the model was trained to consume.
+Source: MiniMax's own `VIDEO_PROMPT_WRITING_GUIDE_base_en.md`. This is MiniMax's documented rewrite-output format. ComfyUI does not run that rewriter and tokenizes your prompt directly, so the structure exists only if you type it — but the cited sources do not establish that this exact shape defines H3's prompt-training distribution.
 
 ## The four frame-conditioned modes
 

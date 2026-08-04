@@ -1,13 +1,13 @@
 # Troubleshooting — symptom → cause → fix
 
-These are empirical. None of them appear in MiniMax's own guides.
+Mixed evidence, and the difference matters. **Official** marks a rule stated in MiniMax's guides. **Implementation** marks behaviour visible in the ComfyUI source or stock workflow. **Empirical** marks a render tendency or an inferred symptom-to-cause link. A structural rule can be Official while the claim that breaking it causes a particular artifact is only Empirical — most entries below are exactly that pairing, so read the causes as *likely* rather than demonstrated. See `SOURCES.md`.
 
 ## Identity drifts, or the face flickers between two people
 
 **Cause, in order of likelihood.**
 
 1. Identity was put in a standalone `<Picture N>` instead of `<Subject N>`. The guide explicitly says an image that only defines a character gets no picture entry of its own.
-2. Two references compete for the identity axis — typically a reference video containing a person alongside a reference still. Reference video arrives as an image batch through the same channel as stills, so dozens of frames of a face outweigh one photo.
+2. Two references compete for the identity axis — typically a reference video containing a person alongside a reference still. This is an empirical hypothesis, not a mechanism read from the source: the encoder actually presents stills as `<Picture i>` vision blocks and video as timestamped two-frame blocks sampled at 2 fps, and the DiT receives separate image and video reference kinds. How the model weighs repeated video appearances against one portrait is not established anywhere.
 3. Wrong mode: a viewpoint absent from the source photo was forced through I2VA, so the model hallucinated the body mid-rotation.
 4. `ref_image_size` left at `match` — but only if the reference is above ~1 MP, since below that both settings are identical no-ops.
 5. Encoder quantised to `nvfp4_awq` — identity flows through the encoder in reference mode.
@@ -54,7 +54,7 @@ These are empirical. None of them appear in MiniMax's own guides.
 
 **Cause.** The ComfyUI template uses `BasicGuider` — one conditioning input, CFG effectively 1, no negative socket.
 
-**Fix.** Rewrite bans as positive statements of the desired state. Do not swap in `CFGGuider`: it doubles inference time and H3 was not trained with guidance.
+**Fix.** Rewrite bans as positive statements of the desired state. Do not reach for `CFGGuider` casually: it doubles inference time, and how H3 was trained with respect to guidance is not established by any source here.
 
 ## The event happens more times than asked
 
@@ -110,15 +110,17 @@ These are empirical. None of them appear in MiniMax's own guides.
 
 **Fix.** Check the wiring order before blaming the prompt.
 
-## Standalone audio reference rejected
+## Standalone audio reference does nothing
 
-**Cause.** Audio must accompany at least one image or video.
+**Cause.** *Not* a missing image or video — current ComfyUI iterates `ref_audios` unconditionally and accepts standalone audio on its own. The widely repeated "standalone audio is rejected" is a community claim the source contradicts.
+
+**Fix.** Check the node is current, that the clip reaches a `ref_audio_N` socket, and that the loader returns a valid waveform and sample rate. Do not add visual media to satisfy a requirement that does not exist. Remember also that the audio never reaches the text encoder — only its `<Audio j>` label does — so it cannot carry meaning through the prompt path.
 
 ## Output looks soft or noisy
 
 **Cause.** Almost never the step count. Usually quantisation level or resolution.
 
-**Fix.** Move up a quant tier before touching steps. `res_multistep` at 20 steps already equals 35–40 Euler steps. On reference-heavy graphs, A/B the scheduler (`beta` or `normal` against `simple`) at a fixed seed.
+**Fix.** Move up a quant tier before touching steps. `res_multistep` needs fewer steps than `euler` for comparable convergence, so 20 is not as low as it looks — though the usual "equals 35–40 Euler" figure is a rule of thumb, not a measurement. On reference-heavy graphs, A/B the scheduler (`beta` or `normal` against `simple`) at a fixed seed.
 
 ## Can't tell whether a prompt edit helped
 
