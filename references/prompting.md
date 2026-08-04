@@ -131,6 +131,40 @@ overall_soundscape: Steady rain taps against the café windows while low room am
 non_diegetic_music: Sparse piano notes at a slow tempo, joined by sustained low strings that gradually increase in volume before fading out.
 ```
 
+## Choosing the length
+
+Frame count is not a comfort setting — the model reads beat duration literally as event speed, so a generous clip renders as slow motion rather than as headroom. Size it from the content.
+
+**Method.** Budget each beat its real-world duration, add about a second of settle at the end, sum, then round **up** to the nearest `17k+5` value.
+
+| Event | Realistic duration |
+|---|---|
+| A blink, a small smile, a flinch | 0.3–0.5 s |
+| A gunshot, a door slam, a snap | under 0.3 s |
+| A head turn, a glance over the shoulder | 0.5–0.8 s |
+| A fall to the ground, an impact | 0.4–0.6 s |
+| Raising an arm, reaching for something | 0.8–1.2 s |
+| A single step | ~0.5 s |
+| Walking into frame across a room | 2–3 s |
+| A camera move slow enough to read as deliberate | 1.5–2.5 s |
+| Holding a final pose while motion settles | 1–2 s |
+| Spoken English | ~2.7 words per second |
+
+**Defaults when the content is not yet detailed:**
+
+| Shot | Frames | Duration |
+|---|---|---|
+| One action, static camera | 124 | 5.17 s |
+| One action plus one camera move | 158 | 6.58 s |
+| An entrance, an approach, a walk-in | 192 | 8.00 s |
+| Action → reaction → settle | 209 | 8.71 s |
+| Anything with cuts between shots | 243+ | 10.13 s+ |
+| Dialogue | from the word count at ~2.7 w/s, rounded up | |
+
+Two limits bound this. Below 124 and above 362 the model is out of its trained range. And frames drive VRAM and render time directly, so a clip twice as long is not a free experiment — get the motion right short, then extend.
+
+The failure this prevents is specific: a prompt whose written timeline is longer than the render gets crushed, while one that is shorter leaves the model padding with drift and float. Matching the two is worth more than most parameter tuning.
+
 ## Per-mode structure
 
 **I2VA** — `<Picture 1>` *is* frame 0 and belongs to `[Shot 1]`. Establish the image's style, subjects, composition and anchors, then describe the next action. Identity, clothing, colours, key objects and spatial relationships stay consistent.

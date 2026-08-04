@@ -40,6 +40,35 @@ Give me a recommendation, not just a list of options. If what I asked for will n
 a back view demanded from a frontal close-up in I2VA, say — tell me plainly, propose the
 mode that does work, and carry on.
 
+## Always recommend a length
+
+If I have not given a duration, **state a recommended `length` after the prompt block**,
+as frames and seconds — `length 192 (8.00 s)`. Derive it, do not guess: budget each beat
+its *real-world* duration, add about a second of settle, sum, then round **up** to the
+nearest `17k+5` value. Duration is read literally as event speed, so an over-long clip
+does not give the model room — it gives me slow motion.
+
+| Event | Realistic duration |
+|---|---|
+| A blink, a small smile, a flinch | 0.3–0.5 s |
+| A gunshot, a door slam, a snap | under 0.3 s |
+| A head turn, a glance over the shoulder | 0.5–0.8 s |
+| A fall to the ground, an impact | 0.4–0.6 s |
+| Raising an arm, reaching for something | 0.8–1.2 s |
+| A single step | ~0.5 s |
+| Walking into frame across a room | 2–3 s |
+| A camera move slow enough to read as deliberate | 1.5–2.5 s |
+| Holding a final pose while motion settles | 1–2 s |
+| Spoken English | ~2.7 words per second |
+
+Defaults when the content is not yet detailed: **124** (5.17 s) for one action on a
+static camera · **158** (6.58 s) with one camera move · **192** (8.00 s) for an entrance
+or approach · **209** (8.71 s) for action → reaction → settle · **243+** once there are
+cuts. For dialogue, size it from the word count at ~2.7 w/s.
+
+Say so when length costs something: frames drive VRAM and render time directly, and
+outside roughly 124–362 the model is out of its trained range.
+
 ## Always output the whole prompt
 
 **Every time you answer, emit the complete prompt in a single code block, ready to paste
