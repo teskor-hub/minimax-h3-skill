@@ -1,140 +1,141 @@
-# Copy-paste templates
+# Templates
 
-Fill the angle-bracket slots. Keep the block order. Delete blocks that do not apply — do not reorder them.
+Fill the angle-bracket slots. Keep section order and the exact instruction lines — they are fixed strings, not paraphrasable.
 
-## R2V — reference to video
-
-```
-<Picture 1> locks <SUBJECT: face, distinguishing marks, hair, wardrobe>.
-Keep these exactly as in <Picture 1>.
-<Picture 2> fixes <SECOND AXIS: silhouette from behind / wardrobe / location>.
-
-Scene: <ENVIRONMENT, time of day, light source, palette>.
-
-[0.0-<t1>s] <opening framing>. <action that changes something>.
-[<t1>-<t2>s] <camera move stated as a move>. <what enters or leaves frame>.
-[<t2>-<t3>s] <second action>. <where the subject's eyes go>.
-[<t3>-<end>s] <the move settles>. <final held state>.
-
-Camera: <one primary move>, <handheld / locked off>, one continuous take, no cuts, no zoom.
-
-Audio: <room tone>, <diegetic effect tied to the action> at <time>, <no music / music description>.
-
-Keep identical: <identity anchors>. Never: on-screen text, watermarks, subtitle bars.
-```
-
-## I2V — animate this exact photo
-
-No `Roles` block: the image is frame 0, not a reference. Do not re-describe what is already visible in it — that competes with the conditioning and causes warping. Describe only what **changes**.
+## T2VA — text only
 
 ```
-Scene continues from the input frame.
+integrated_multimodal_description: [Shot 1] <STYLE: Live-action, cinematic / 2D-animated / vintage film>, <opening framing> frames <SUBJECT> in <ENVIRONMENT>. The camera <MOVE> <with small/large amplitude> <at slow/fast speed> as <ACTION>. <REACTION or state change>. [Shot 2] At 00:0X.000, the camera cuts to <NEW INFORMATION — subject, space, state, viewpoint or time>.
 
-[0.0-<t1>s] <first change — a movement, not a description>.
-[<t1>-<t2>s] <camera move>. <what comes into frame>.
-[<t2>-<end>s] <settling action>, <final held state>.
+overall_soundscape: <ambience>. <physical action sounds tied to what happens>.
 
-Camera: <one move>, <texture>, one continuous take, no cuts.
-
-Audio: <room tone>, <effect> at <time>, no music.
-
-Keep: <geometry / lighting / composition that must not drift>. No redesign of <the thing>.
+non_diegetic_music: <instrumentation, tempo, rhythm, dynamic development> — or N/A.
 ```
 
-## FLF2V — first and last frame given
-
-Both endpoints are locked, so the prompt only describes the middle. Keep it short — over-specifying fights the endpoints.
+## I2VA — animate this exact photo
 
 ```
-<SUBJECT ACTION between the two frames> while the shot <CAMERA MOVE>.
-One smooth continuous move, <handheld / steady>, natural micro-wobble, no cuts.
-<Where the eyes stay throughout>.
+For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.
 
-Audio: <room tone>, <effect>, no music.
+integrated_multimodal_description: [Shot 1] <STYLE>, the <SUBJECT> shown in <Picture 1> remains <position and framing>, preserving <appearance, clothing, key objects, spatial relationships>. The camera <MOVE> <amplitude> <speed> as <FIRST CHANGE>. <CONTINUOUS DEVELOPMENT>. <RESULT OR REACTION>.
+
+overall_soundscape: <ambience>. <action sounds>.
+
+non_diegetic_music: <...> — or N/A.
 ```
 
-Both frames must share aspect ratio, resolution, colour grade, grain and image quality. A cleaner, more retouched end frame turns the clip into a beautification morph — far more visible than the intended motion.
+Do not re-describe what is already visible in the picture beyond naming the anchors that must not drift. Describe what **changes**.
 
-## T2V — text only
+## FL2VA — first and last frame
 
 ```
-<SUBJECT> in <ENVIRONMENT>, <time of day, light>.
+How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the <S.SS>-second mark of the target video.
 
-[0.0-<t1>s] <action>.
-[<t1>-<t2>s] <camera move>, <action>.
-[<t2>-<end>s] <ending state>.
+integrated_multimodal_description: [Shot 1] <STYLE>, <SUBJECT> begins in the position and framing established by Picture 1, <opening state>. The camera <MOVE> <amplitude> <speed> as <INTERMEDIATE CHANGE 1>, <INTERMEDIATE CHANGE 2>, and <NARROWING DIFFERENCE>. <SUBJECT> settles into the pose, spacing, and composition established by Picture 2 at the end of the shot.
 
-Camera: <move>, <texture>, <cuts or continuous>.
+overall_soundscape: <...>
 
-Look: <capture technique, grain, palette>.
-
-Audio: <track description with timing>.
-
-Never: <bans>.
+non_diegetic_music: <...> — or N/A.
 ```
+
+Single shot unless multiple are explicitly required. Both frames must share aspect ratio, resolution, colour grade, grain and image quality — a cleaner end frame turns the clip into a beautification morph, far more visible than the intended motion.
+
+## L2VA — land on a final frame
+
+```
+How the reference pictures align with the target video — <Picture 1> (from [Shot 1]) aligns with the <S.SS>-second mark of the target video.
+
+integrated_multimodal_description: [Shot 1] <STYLE>, <opening framing> begins with <PLAUSIBLE EARLIER STATE compatible with the final image>. The camera <MOVE> <amplitude> <speed> as <TRANSITION PATH>. Toward the end, <ELEMENTS> settle into the exact <arrangement, position, camera angle, lighting, and final composition> established by <Picture 1>.
+
+overall_soundscape: <...>
+
+non_diegetic_music: <...> — or N/A.
+```
+
+## Full-reference (R2V)
+
+```
+subject_definitions:
+<Subject 1> is the <PERSON> whose appearance comes from <Picture 1> — <face, hair, distinguishing marks, wardrobe> — and whose <motion / pose / action> comes from <Video 1>.
+<Subject 2> is the <ENVIRONMENT> from <Picture 1>: <walls, light sources, furniture, floor>.
+<Video 1> is the <camera-movement and pacing> reference for the target video.
+
+summary:
+[reference generation] The target video shows <Subject 1> in <Subject 2>, <one-sentence action>, following the <camera movement and pacing> of <Video 1>.
+
+retention_analysis:
+<Subject 1> (appears in [Shot 1]): fully_preserved - <the listed identity features> are retained.
+<Subject 2> (appears in [Shot 1]): fully_preserved - <the listed environment features> are retained.
+<Video 1> (camera movement and pacing): weak_reference - only the travelling path and handheld rhythm are followed; none of its people, wardrobe, location or lighting appear.
+
+detailed_description:
+The target video is <one or two sentences of style, palette, lighting, grain>.
+[Shot 1] <Subject 1>, <referenced characteristics as visible here>, <position in frame>, <current action>. The camera <MOVE> <amplitude> <speed> as <what changes>. <Continued action, state changes, what enters or leaves frame>. <Final held state>.
+
+overall_soundscape:
+<ambience>. <physical action sounds>.
+
+non_diegetic_music:
+N/A
+```
+
+Reminders that decide whether this works at all: identity goes in `<Subject N>`, never a standalone `<Picture N>`. Anything reused as visible content from a video is a subject, not a `<Video N>`. Scope a reference's role in `retention_analysis` rather than forbidding things in the body.
 
 ---
 
 ## Worked example — overhead selfie-style shot
 
-The brief: a photo of a woman, tight frontal close-up; the target shot is the viewpoint rising above her head and looking down while she reaches up toward it and holds eye contact.
+Brief: a photo of a woman, tight frontal close-up; the target is the viewpoint rising above her head and looking down while she reaches toward it and holds eye contact.
 
-This is an R2V job — the target framing does not exist in the source photo, and forcing a 180° rotation through I2V collapses the face.
+Full-reference, because the target framing does not exist in the source photo and forcing a 180° rotation through I2VA collapses the face.
 
 ```
-<Picture 1> locks her face, freckles, the small cross tattoo under her right eye,
-the striped heart tattoo on her neck, the messy black shag haircut with curtain
-bangs, and the grey ribbed tank top. Keep all of it exactly as in <Picture 1>.
-<Picture 2> fixes her hair length and silhouette seen from behind.
+subject_definitions:
+<Subject 1> is the young woman whose appearance comes from <Picture 1>: a messy black
+shag haircut with wispy curtain bangs, freckled cheeks, a small cross tattoo under her
+right eye, a striped heart tattoo on her neck, a grey ribbed tank top and a thin chain
+with a red pendant. Her hair length and silhouette from behind come from <Picture 2>.
+<Subject 2> is the bedroom from <Picture 1>: cream walls, an amber table lamp on a
+dresser, carpet, warm low light.
 
-Scene: a warm dim bedroom at night, cream walls, an amber table lamp glowing
-behind her, soft film grain, natural low-light colour, shallow depth of field.
+summary:
+[reference generation] The target video shows <Subject 1> standing in <Subject 2>,
+raising both arms toward the lens as the camera cranes above her and looks down.
 
-[0.0-1.0s] Eye level, close. She looks into the lens, then lifts both arms up and
-forward toward the viewer, elbows opening wide, her hands passing just outside the
-top corners of the frame.
-[1.0-2.8s] The shot cranes up above her head and tilts down into a steep high angle.
-Her bare shoulders and the top of her back fill the frame, hair falling forward
-around her face, her forearms angled upward at the left and right edges.
-[2.8-4.4s] She tilts her head back, chin lifted, eyes up into the lens. The shot
-drifts in a slow arc above her, lamp light sweeping across her face.
-[4.4-5.0s] The motion settles and holds. One slow blink, the faintest smile.
+retention_analysis:
+<Subject 1> (appears in [Shot 1]): fully_preserved - her face, freckles, both tattoos,
+hair and wardrobe are retained.
+<Subject 2> (appears in [Shot 1]): fully_preserved - the walls, lamp and carpet are retained.
 
-Camera: handheld, crane up, tilt down to high angle, slow arc above her,
-one continuous take, natural micro-wobble, no cuts, no zoom.
+detailed_description:
+The target video is a warm, dim handheld phone video at night, softly grained, with
+shallow depth of field and natural low-light colour.
+[Shot 1] <Subject 1> stands at eye level facing the lens, the amber table lamp glowing
+behind her right shoulder. She lifts both arms up and forward toward the viewer, elbows
+opening wide, her hands passing just outside the top corners of the frame. The camera
+pedestals up with large amplitude at slow speed and tilts down into a steep high angle;
+the ceiling leaves the frame and the carpet appears behind her instead. Her bare
+shoulders and the top of her back fill the lower frame, her black hair falling forward
+around her face, her forearms angled upward at the left and right edges. She tilts her
+head back, chin lifted, and holds eye contact with the lens as the lamp light rakes
+across her cheek. The move settles and holds; she blinks once, slowly, with the faintest
+smile.
 
-Audio: quiet room tone, soft rustle of fabric as she lifts her arms, one calm
-breath near 4s, no music.
+overall_soundscape:
+Quiet indoor room tone continues throughout, with the soft rustle of fabric as her arms
+lift and one calm breath near the end.
 
-Keep identical: her face proportions, freckles, both tattoos, hair length.
-Never: on-screen text, watermarks, subtitle bars.
+non_diegetic_music:
+N/A
 ```
 
 What the structure is doing:
 
-- **No device anywhere.** The viewpoint is the thing she is reaching for, so it is off-frame by definition. Nothing for the model to render wrong, and it sidesteps the failure where a raised hand comes up empty because the phone was never in the reference.
-- **`hands passing just outside the top corners`** keeps the hands cropped. Hands reaching toward the lens are heavily foreshortened and are where extra fingers appear; cropping them removes the opportunity.
-- **Camera motion and body motion in separate sentences.** Joined by a possession verb they resolve into a prop.
-- **`<Picture 2>` for the back silhouette**, because the source close-up shows nothing below the collarbone and the model would otherwise invent the hair and build that end up filling most of the frame.
+- **No device anywhere.** The viewpoint is what she reaches for, so it is off-frame by definition. Nothing to render wrong, and it sidesteps the failure where a raised hand comes up empty because the phone was never in the reference.
+- **`hands passing just outside the top corners`** keeps the hands cropped. Hands reaching toward the lens are heavily foreshortened and are where extra fingers appear.
+- **`pedestals up … and tilts down`** — official camera vocabulary with amplitude and speed, in one sentence, as an action. Written as a possession verb (`she raises the camera`) it would resolve into a prop instead.
+- **`<Picture 2>` cited inside the subject, not as its own entry**, because it only supplies hair silhouette — it is not a frame anchor.
 
-### FLF2V alternative
+### If likeness breaks at extreme angles
 
-If preserving the exact room, grain and light of the source photo matters more than framing freedom, generate the end frame separately with an image editor, then run FLF2V with the photo as `start_image` and the generated frame as `end_image`. When editing the end frame, the critical instruction is *not* the pose — it is forbidding retouching, so both frames are equally imperfect:
-
-```
-Same person, same room, same camera — another frame from the same clip, filmed
-two seconds later. Not a new photo.
-
-Change only the pose and the camera angle: <TARGET FRAMING>.
-
-Keep identical: <identity anchors>. Keep identical: the same colour grade, the
-same low-light noise and softness, the same slightly amateur phone-camera look.
-
-Do not retouch. Do not smooth the skin, do not remove freckles, do not redraw the
-tattoos, do not brighten the room, do not make it look professional or studio-lit.
-Keep the same imperfect image quality as the original.
-
-Output in the same aspect ratio and resolution as the input photo.
-```
-
-A steep overhead angle is the hardest case for identity — the face is severely foreshortened, chin near, forehead far. If likeness breaks, back off to `a steep high angle from above, about 70 degrees, not fully vertical`: nearly the same composition, far more recoverable face.
+A near-vertical overhead is the hardest case: the face foreshortens severely, chin near, forehead far. Back off to a steep-but-not-vertical angle — roughly 70° — and the composition barely changes while the face becomes recoverable.

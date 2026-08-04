@@ -1,146 +1,157 @@
-# Prompting MiniMax H3 in depth
+# The official format — T2VA / I2VA / FL2VA / L2VA
 
-## Why structure beats prose
+Source: MiniMax's own `VIDEO_PROMPT_WRITING_GUIDE_base_en.md`. This is the shape the model's prompt rewriter emits, so it is the shape the model was trained to consume.
 
-H3 is a timeline model. It reasons about *what changes between second 1 and second 3*, not about a description of a picture. Two prompts with identical vocabulary produce very different results depending on whether the vocabulary is arranged as a keyword cloud or as playback order.
+## The four frame-conditioned modes
 
-The failure this prevents is the most common one in the wild: describing a **still frame** and getting a still frame with drift. `A woman in a dim bedroom, warm lamp light, cinematic, beautiful` gives you five seconds of a face slowly melting. `[0-2s] she turns her head toward the lamp; [2-5s] she looks back into the lens` gives you a shot.
-
-## The five blocks
-
-### Roles — R2V only
-
-Every reference gets an explicit job. The guides converge on this as the number one R2V failure: attaching files without telling the model what each is for.
-
-```
-<Picture 1> locks the character's face, hairstyle and body proportions.
-<Picture 2> sets the film stock, palette and grain.
-<Picture 3> is the bottle she lifts.
-<Video 1> supplies walking rhythm and camera pace only — not the subject, not the location.
-<Audio 1> sets the voice timbre.
-```
-
-Split concerns deliberately. "Video 1 for motion, Picture 1 for identity" works because each reference owns one axis. Two references silently competing for the same axis is the second-biggest failure mode — if two images both imply a face, say which one wins.
-
-Numbering follows **socket connection order** on `MiniMaxH3ReferenceToVideo`, not filename order.
-
-### Beats — timestamped action
-
-```
-[0-5s]   she moves along the benches
-[5-10s]  she lifts the bottle into the backlight
-[10-15s] she sets it down
-```
-
-Rules:
-- 1–3 beats per 5 seconds. More beats than that and each gets a fraction of a second.
-- Match beat count to duration. A 3-beat prompt rendered at 5 s is rushed; a 1-beat prompt at 15 s stalls and the model invents filler.
-- Every beat names a *change*. "She stands in the doorway" is not a beat. "She steps through the doorway" is.
-
-### Look — production language
-
-Name the capture technique, not the vibe:
-
-```
-handheld with natural micro-wobble, warm low-light, soft film grain,
-shallow depth of field, slight autofocus delay, amateur phone-camera look
-```
-
-Dead words that consume tokens and steer nothing: `cinematic`, `masterpiece`, `beautiful`, `8k`, `ultra-detailed`, `award-winning`.
-
-Transitions, when you need them, are named explicitly: `hard cut`, `match cut`, `wipe`, `tape jump`. Say `one continuous take, no cuts` when you want no transitions — otherwise a multi-beat prompt may get cut up.
-
-### Sound — its own track
-
-H3 renders stereo audio in the same pass as the picture. Leaving it unwritten does not produce silence; it produces the model's guess, which is usually generic music.
-
-```
-Quiet room tone throughout. Soft rustle of fabric as she lifts her arms.
-One calm breath near 4s. No music.
-```
-
-Patterns that work:
-- name instruments and their entry time — `lo-fi drum machine from 0s, tape-noise sample joins at 2.5s, melody fades over the last second`
-- pair diegetic sound with the action that causes it — `footsteps landing`, `a faint knock of fingers on plastic`
-- for speech, give the line verbatim in quotes plus delivery — `she says, "I thought we had more time," quietly`
-- say `no music` or `no dialogue` when you mean it
-
-### Locks and bans
-
-Constraints go **up front**, not appended at the end where they get diluted.
-
-```
-Keep identical: her face proportions, the freckles across her nose, the small
-cross tattoo under her right eye, hair length, the grey ribbed tank top.
-Never: on-screen text, watermarks, subtitle bars, studio lighting.
-```
-
-## Worked examples
-
-Verbatim from published guides, showing the shape at different complexity levels.
-
-**R2V, identity + motion split across references:**
-
-> Use Image 1 as the locked character reference. Preserve the face, hairstyle, age, outfit, and body proportions. Use Video 1 only for walking motion and camera pace. Place the character in a rain-covered night market. End as she stops under a blue streetlight and looks toward the camera.
-
-Note the shape: role assignment → new scene → explicit ending. The ending clause matters; without it the model decides where to leave the shot.
-
-**R2V, three references each with one job:**
-
-> Use reference images for the character's face and wardrobe. Use reference video for relaxed walking rhythm. Use reference audio for warm mid voice timbre. Create a 10-second medium shot on a windy coastal boardwalk at golden hour. The character walks toward camera, smiles once, and says a short free-spirited line. Camera tracks backward smoothly. Keep identity and wardrobe consistent. End on a stable medium close-up.
-
-**R2V, camera path borrowed from a video reference:**
-
-> Reference the camera path from Video 1: a back-following steadicam move through changing light zones. Generate a modern city walk from a warm cafe interior to a busy street and then into a subway stairwell. Keep the lighting transition smooth and do not cut away from the main subject.
-
-**I2V, product, geometry locked:**
-
-> The watch remains centered as a narrow band of warm light travels across the brushed metal case. Fine mist moves slowly behind the product. Camera trucks slightly right while preserving watch geometry and the dark marble surface. No redesign of the dial. End on a clean three-quarter product angle with the dial fully readable.
-
-`No redesign of the dial` is the lock. In I2V the input is frame 0, so locks are about preventing drift away from it.
-
-## The camera-as-object trap
-
-H3 parses `camera` as a scene noun when the sentence gives the subject a grip on it. `She holds the camera above her head` reliably renders a physical camera in her hands, which is almost never what the user wanted — they wanted the *viewpoint* to be above her head.
-
-The fix is grammatical, not semantic:
-
-1. `camera` appears only in the directive line — `Camera: crane up, tilt down to high angle, handheld` — where it reads as an instruction.
-2. The subject's action never mentions a device: `she lifts both arms up and forward toward the viewer, elbows opening wide, her hands passing just outside the top corners of the frame`.
-3. Camera movement and body movement live in **separate sentences**. Joined by a verb of possession, the model connects them through an object; kept apart, the viewer's brain connects them and the model has nothing to render.
-
-If a device still materialises, drop the noun entirely: `Shot: handheld crane up, tilt down to high angle, slow arc, continuous take`.
-
-Same logic for `lens` (`looks into the lens` occasionally spawns glass — fall back to `looks straight at the viewer`) and for any phone that is meant to *be* the camera.
-
-## Common mistakes
-
-| Mistake | What happens |
+| Mode | What it is |
 |---|---|
-| Keyword cloud, no temporal change | five seconds of drift and morphing |
-| Still-frame description | subject barely moves, background breathes |
-| References attached without roles | model averages them into a stranger |
-| Two references competing for one axis | identity flickers between them |
-| Competing camera moves stacked equally | motion mush, no readable move |
-| Constraints buried at the end | constraints ignored |
-| Mode mismatch (background described in I2V) | conflicts with frame 0, causes warping |
-| Mixing first/last frames with references | the unused path is silently dropped |
-| Rewriting the whole prompt to fix one thing | you learn nothing about which change worked |
-| Negative-prompt lists | no negative socket exists at CFG 1; ignored |
+| **T2VA** | a complete audiovisual timeline built from text alone |
+| **I2VA** | T2VA plus a first-frame instruction, developing forward from that frame |
+| **FL2VA** | T2VA plus a first-and-last-frame instruction, a continuous path between them |
+| **L2VA** | T2VA plus a last-frame instruction, converging from a plausible earlier state |
 
-## Iteration protocol
+All four run on the `fl2va` checkpoint.
 
-1. Fix the seed (`управление после генерации` → `fixed`) the moment you get something close.
-2. Change exactly one note — identity, motion, camera, or constraint.
-3. Re-render, compare.
-4. Only then move the seed again to check the change generalises.
+## Part one — the alignment instruction
 
-With `randomize` on you cannot attribute a change to the prompt, because the noise moved too. This costs more wall-clock than any sampler setting.
+T2VA has none and begins directly with the core fields. The other three open with an exact line, followed by **one blank line** before the fields.
 
-## Sources
+**I2VA**
+```
+For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.
+```
 
-- fal.ai — MiniMax H3 Prompting Guide
-- Morphic — How to use MiniMax H3: references, editing, and audio
-- Topview — MiniMax H3 in ComfyUI: Day-0 Local Guide
-- ComfyUI docs — MiniMax H3 workflow examples
-- ComfyUI blog — MiniMax H3 Day-0 Support
+**FL2VA**
+```
+How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot N) aligns with the S.SS-second mark of the target video.
+```
+
+**L2VA**
+```
+How the reference pictures align with the target video — <Picture 1> (from [Shot N]) aligns with the S.SS-second mark of the target video.
+```
+
+`N` is the index of the actual final shot. `S.SS` is the effective duration to exactly two decimals.
+
+## Part two — the three core fields
+
+```
+integrated_multimodal_description: [Shot 1] ...
+
+overall_soundscape: ...
+
+non_diegetic_music: ...
+```
+
+- **integrated_multimodal_description** — visuals, actions, shots, speakers, dialogue, singing and diegetic sound along the timeline
+- **overall_soundscape** — ambience, physical action sounds and non-verbal human sounds across the whole video
+- **non_diegetic_music** — score the characters cannot hear
+
+## Building the description
+
+### Open with style
+
+`[Shot 1]` states the overall style and initial composition. Named styles: `Cinematic`, `live-action`, `2D-animated`, `3D CG`, `claymation`, `watercolor`, `vintage film`. For keyframe tasks derive the style from the reference image.
+
+```
+[Shot 1] Live-action, cinematic, a medium-wide shot frames a baker opening the shutters...
+```
+
+### Shots and cuts
+
+`[Shot 1]` takes no timestamp. Every later shot opens with a strictly increasing cut time inside the video duration:
+
+```
+[Shot 2] At 00:03.500, the camera cuts to...
+```
+
+Cut phrasings: `the camera cuts to`, `the shot cuts to`, `the shot transitions to`, `the shot changes to`, `the shot switches to`. Cross-dissolve, fade and wipe only when the user asks.
+
+**A cut must introduce new information** about subject, space, state, viewpoint or time. If only distance or a slight angle changes, use camera motion instead.
+
+### Camera motion — type + amplitude + speed
+
+| Dimension | Values |
+|---|---|
+| Type | `Zoom In / Zoom Out` · `Push In / Pull Out` · `Pan Left / Pan Right` · `Truck Left / Truck Right` · `Tilt Up / Tilt Down` · `Pedestal Up / Pedestal Down` · `Arc Shot` · `Tracking Shot` · `Static Shot` · `Shake Slightly / Shake Strongly` · `POV` · `Roll Clockwise / Roll Counterclockwise` |
+| Amplitude | `with small amplitude` · `with large amplitude` |
+| Speed | `at slow speed` · `at fast speed` |
+
+Medium amplitude and normal speed are omitted. Write the move as a natural action inside the sentence, not as tags appended to it:
+
+```
+The camera pushes in with small amplitude at slow speed toward the folded letter in her hands.
+The camera pans right with large amplitude at fast speed, revealing the open doorway.
+The camera holds a static shot as the runner exits the frame.
+```
+
+Note the two that solve common problems: **`Arc Shot`** is the orbit you were describing longhand, and **`POV`** is how you get a subject's-eye view without ever naming a device.
+
+### Speakers, dialogue, singing
+
+Stable IDs `(S1)`, `(S2)`; a compound `(S1,S2)` when numbered speakers vocalise together. IDs persist across shots. Characters who never vocalise get no ID.
+
+On first appearance, establish identity from visual and audio context — type, age, gender, on- or off-screen, pitch, timbre, rate, accent. The identifying phrase, ID, action and delivery go **outside** `<d>`; inside `<d>` goes only the language tag and the exact spoken content, verbatim, untranslated.
+
+```
+The young woman with a quiet, breathy voice (S1) says: <d>[English] I get off at the next station.</d>
+The two children (S1,S2) shout together, <d>[English] Wait for us!</d>
+```
+
+Voiceover uses the exact phrase `says in an off-screen voiceover`, and every voiceover `<d>` is immediately followed by a statement that the on-screen character's lips stay closed:
+
+```
+The man (S1) says in an off-screen voiceover: <d>[English] I still remember that road.</d> while his lips remain completely closed.
+```
+
+A line crossing a cut uses `<scenetrans>` at both connecting points plus an explicit continuity statement — `continues seamlessly across the cut`, `continues uninterrupted into the next shot`, `carries over from the previous shot`, `remains audible across the transition`. Speech truncated by the video ending uses `<cutoff>`.
+
+### On-screen text
+
+Anything actually visible — banner, sign, label, subtitle, neon — goes in English double quotes, verbatim, untranslated.
+
+```
+A red neon sign reading "营业中" glows above the doorway.
+```
+
+### overall_soundscape
+
+1–4 sentences, one paragraph: wind, rain, traffic, footsteps, fabric, impacts, breathing, laughter, panting. Dialogue, singing and diegetic music stay in the description and are not repeated here. `N/A` only for explicitly requested total silence.
+
+```
+overall_soundscape: Steady rain taps against the café windows while low room ambience continues underneath. The entrance bell rings once, followed by wet footsteps and the soft scrape of a chair.
+```
+
+### non_diegetic_music
+
+1–3 sentences on instrumentation, speed, rhythm and dynamics. **No abstract mood words and no explanation of emotional function.** Music the characters can hear — singing, instruments, radio, TV, a phone — is diegetic and belongs in the description instead. `N/A` when there is none.
+
+```
+non_diegetic_music: Sparse piano notes at a slow tempo, joined by sustained low strings that gradually increase in volume before fading out.
+```
+
+## Per-mode structure
+
+**I2VA** — `<Picture 1>` *is* frame 0 and belongs to `[Shot 1]`. Establish the image's style, subjects, composition and anchors, then describe the next action. Identity, clothing, colours, key objects and spatial relationships stay consistent.
+Shape: **first-frame anchor → action onset → continuous development → result or reaction**
+
+**FL2VA** — Picture 1 opens, Picture 2 closes. Do not restate two static images; supply the motion path between them. **Favours a single shot** so the model can interpolate continuously; use multiple shots only when explicitly asked. The last frame must be reached at the end of the final shot.
+Shape: **first-frame state → observable intermediate changes → progressively narrowing differences → last-frame state**
+
+**L2VA** — `<Picture 1>` is the final frame and belongs to the last `[Shot N]`, not to Shot 1. Infer a plausible earlier state, then converge.
+Shape: **plausible preceding state → explicit action and transition path → gradual convergence → last-frame landing**
+
+## Worked example — I2VA, verbatim from the guide
+
+```
+For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.
+
+integrated_multimodal_description: [Shot 1] Live-action, cinematic, the young woman shown in <Picture 1> remains beside the rain-covered train window, preserving her appearance, clothing, seat position, and the carriage layout. The camera trucks right with small amplitude at slow speed as she lifts her gaze from the folded letter toward the passing city lights. Her reflection moves across the glass while the quiet, breathy young woman (S1) says: <d>[English] I get off at the next station.</d> She folds the letter along its existing crease.
+
+overall_soundscape: The train wheels produce a steady metallic rhythm beneath a low ventilation hum. Rain ticks against the window while paper rustles softly in her hands.
+
+non_diegetic_music: Sustained cello notes at a slow tempo with widely spaced piano tones, gradually decreasing in volume.
+```
+
+Note what it does *not* do: no keyword cloud, no `cinematic masterpiece 8k`, no negative list, no re-description of what is already visible in Picture 1 beyond naming the anchors it must preserve.
