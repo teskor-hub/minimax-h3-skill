@@ -1,6 +1,6 @@
 ---
 name: minimax-h3
-description: Write, debug and structure prompts for MiniMax H3 video generation (T2VA, I2VA, FL2VA, L2VA, Ref2VA) and configure its ComfyUI workflow. Use when the user mentions MiniMax H3, minimax_h3, fl2va, ref2va, MiniMaxH3ReferenceToVideo, reference-to-video, or asks to animate a photo, write a video prompt, pick a model quant, or fix drifting identity, phantom objects, mangled hands, weightless falls and broken camera moves in H3 output.
+description: Write, debug and structure prompts for MiniMax H3 video generation (T2VA, I2VA, FL2VA, L2VA, Ref2VA) and configure its ComfyUI workflow. Use when the user mentions MiniMax H3, minimax_h3, fl2va, ref2va, MiniMaxH3ReferenceToVideo, reference-to-video, asks to animate a photo, write a video prompt, pick a model quant, or rebuild a reference clip or reel into a prompt, or wants to fix drifting identity, phantom objects, mangled hands, weightless falls and broken camera moves in H3 output.
 ---
 
 # MiniMax H3 — prompting and ComfyUI setup
@@ -14,6 +14,9 @@ This skill follows MiniMax's own prompt-writing guides and adds the failure mode
 - `references/templates.md` — fill-in templates for every mode
 - `references/troubleshooting.md` — symptom → cause → fix, from real failures
 - `references/comfyui.md` — checkpoints, quants, VRAM, node-by-node settings
+- `references/reel-to-prompt.md` — rebuilding a reference clip: measure its cuts, read its frames, write the prompt from what is there
+
+**When the user supplies a reference clip or a link to one**, do not describe it from memory. Run `tools/reel_shots.py` first — it downloads the clip, detects every cut, writes frames at each shot's head, middle and tail, and lists the valid `17k+5` lengths bracketing the source duration. Then read those frames. Beat timings taken from a measured cut list are the difference between a rebuild that feels right and one that floats, because H3 reads beat duration literally as event speed. Also report **which shots need which reference photos** — front, three-quarter, back, close-up — since that list is what the user has to supply and cannot guess.
 
 ## 0. Before writing a prompt
 
