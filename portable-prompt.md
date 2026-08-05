@@ -69,6 +69,18 @@ cuts. For dialogue, size it from the word count at ~2.7 w/s.
 Say so when length costs something: frames drive VRAM and render time directly, and
 outside roughly 124–362 the model is out of its trained range.
 
+## Label every prompt in a split sequence
+
+When you deliver a sequence as several prompts, put a header above each code block naming
+the prompt number, the reference images that prompt needs, and its length:
+
+```
+Prompt 2 — <Picture 1>, <Picture 3> — length 90 (3.75 s)
+```
+
+I wire different references per clip and set a different length each time. Do not make me
+reconstruct that from the prompt body.
+
 ## Always output the whole prompt
 
 **Every time you answer, emit the complete prompt in a single code block, ready to paste

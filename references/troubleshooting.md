@@ -2,6 +2,14 @@
 
 Mixed evidence, and the difference matters. **Official** marks a rule stated in MiniMax's guides. **Implementation** marks behaviour visible in the ComfyUI source or stock workflow. **Empirical** marks a render tendency or an inferred symptom-to-cause link. A structural rule can be Official while the claim that breaking it causes a particular artifact is only Empirical — most entries below are exactly that pairing, so read the causes as *likely* rather than demonstrated. See `SOURCES.md`.
 
+## A multi-view character sheet gives worse identity than plain photos
+
+**Reported outcome.** Attaching a grid-format character reference sheet — front, profile, back, face close-ups and hands on a neutral background, all in one image — performed noticeably worse than separate photographs. Tried once by a user on 2026-08-04; not measured against a control.
+
+**Likely cause.** The sheet is resized as a single image, so at `ref_image_size: max` a 3 × 3 grid gives roughly 680 px per panel against 2048 px for a dedicated still. Every view arrives at about a third the linear detail. The grid's own structure — framed panels, gutters, a repeated figure, a seamless backdrop — is also visible content competing with the target scene.
+
+**Do not recommend sheets.** Use separate full-resolution photographs, two to four of them, covering the angles the shot will actually reveal. If a user already has a sheet, treat it as one weak reference among several rather than as the primary identity source.
+
 ## Identity drifts, or the face flickers between two people
 
 **Cause, in order of likelihood.**
