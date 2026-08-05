@@ -108,6 +108,9 @@ Not from MiniMax, not from the source — craft rules adopted because they held 
 | Claim | Type |
 |---|---|
 | The event-duration table and ~2.7 spoken words per second | Empirical, general production knowledge |
+| A character sheet yields ~1/3 the per-panel detail of a dedicated still | Arithmetic from the verified `ref_image_size` formulas and the grid layout |
+| A sheet's grid structure and backdrop can leak into the output | Empirical, expected from how references are presented |
+| Splitting long or multi-cut sequences beats one long generation | Empirical, plus the Implementation fact that frames drive VRAM and time |
 | Frame defaults 124 / 158 / 192 / 209 / 243+ per shot type | Empirical |
 | One primary camera move per shot | Empirical |
 | An omitted `non_diegetic_music` field tends to produce unwanted music | Empirical |

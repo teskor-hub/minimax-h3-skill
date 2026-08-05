@@ -15,6 +15,9 @@ This skill follows MiniMax's own prompt-writing guides and adds the failure mode
 - `references/troubleshooting.md` — symptom → cause → fix, from real failures
 - `references/comfyui.md` — checkpoints, quants, VRAM, node-by-node settings
 - `references/reel-to-prompt.md` — rebuilding a reference clip: measure its cuts, read its frames, write the prompt from what is there
+- `references/character-sheets.md` — multi-view identity sheets: what they buy, what they cost, and how to stop their wardrobe and backdrop transferring
+
+**When the user attaches a character reference sheet** — a grid of studio views of one person on a neutral background — recognise it as a sheet rather than a photo, and say so inside the `<Subject N>` definition. Give it the appearance-and-proportions role only, and source clothing and location elsewhere, so its neutral wardrobe and seamless backdrop are never in its role to begin with. Use `fully_preserved`, since the marker describes fidelity within the assigned role and the wardrobe was never in it. Warn about the resolution trade: the sheet is resized as one image, so a 3 × 3 grid gives roughly a third the per-panel detail of a dedicated still, and a face-heavy shot wants a full-resolution portrait alongside it.
 
 **When the user supplies a reference clip or a link to one**, do not describe it from memory. Run `tools/reel_shots.py` first — it downloads the clip, detects every cut, writes frames at each shot's head, middle and tail, and lists the valid `17k+5` lengths bracketing the source duration. Then read those frames. Beat timings taken from a measured cut list are the difference between a rebuild that feels right and one that floats, because H3 reads beat duration literally as event speed. Also report **which shots need which reference photos** — front, three-quarter, back, close-up — since that list is what the user has to supply and cannot guess.
 
