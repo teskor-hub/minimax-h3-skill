@@ -138,6 +138,26 @@ CreateVideo         24 fps, bit_depth 8
 
 **Sage Attention**, if installed, roughly doubles generation speed with minimal quality loss. Blackwell needs SageAttention 2++ or 3.
 
+## The community speed/quality ecosystem (Aug 2026)
+
+Everything in this section is **Community/Empirical** — single-seed anecdotes on mixed hardware from the banodoco Discord (`#minimax_h3_*`, 2026-08-05), with opinions that openly conflict. It is included because kijai — author of the KJ nodes and of Sol-Attn — is on record in those channels, and his reads correct several popular claims. Treat all of it as A/B leads, not measurements. See `SOURCES.md`.
+
+**The toolchain is upstream of any node.** CUDA 13 + torch 2.13 (cu130) + Triton 3.7 fixed OOM and cut render times materially for many users; "if you're not on cuda 13, upgrade" was the single most repeated tip. On a card where the models do not fit, this and the quant tier matter far more than any accelerator node — a config that swaps is an order of magnitude slower than one that fits (see the quant section).
+
+**Attention patchers are mutually exclusive.** Sage (KJ), Memory-Efficient Sage, and Sol-Attn all patch the same attention forward — pick one. Sage ≈ 2× at near-zero quality cost is still the safe default. `MiniMaxH3 Memory-Efficient Sage` (KJ nodes) cuts Sage's VRAM *peak* without changing speed — useful on tight cards; it is not a second speedup to stack.
+
+**Sol-Attn** (`kijai/ComfyUI-SolAttn_triton`) sparsifies attention (int8, `tau`≈1.3), needs Triton, works Ampere-and-up (3090 confirmed). Per kijai it does **more harm to quality at low resolution** (warping) and is near-perfect at high res — at the model's max (1344×768×362, ~100k tokens) his Sol steps ran ~2× faster than Sage. So it is a high-resolution play, not a low-res one. v2 added `dense_steps` / `step_off` to run the final denoise steps fully dense for quality; recent builds require a `use_tma` input (update the node if you hit a validation error). Not working on ROCm yet.
+
+**Step-skip caches are a quality trade, and kijai rates them low.** EasyCache, Spectrum, LazyCache, TeaCache, MagCache and the widely-shared `lihaoyun6/ComfyUI-MiniMaxH3-Cache` all skip redundant sampling steps. kijai on the last one: *"code makes no sense… it doesn't do anything better"* — its apparent 2× is just more aggressive settings, and it monkeypatches the whole model forward (fragile across updates). His practical notes: **do not stack two caches**; EasyCache at `0.02` does nothing, `~0.10` is safe (*"those steps it skips don't contribute much"*); Spectrum *"makes more sense as it does do something more, it just costs memory."* High skip visibly destroys character consistency and motion — turn caches down or off for action/high-motion and for the final render. All of it becomes moot once a step-distill/turbo LoRA lands (kijai: *"once step distill comes out all the cache stuff will be forgotten"*); none exists yet.
+
+**Offloading is essentially free on H3.** kijai: video-model steps are compute-bound, so block/layer offload overlaps compute asynchronously and costs almost nothing here — *"on models where step time is fast, offloading can be bottleneck; this isn't the case on this model."* Fit the largest quant you can with offload rather than fearing it. This is the same conclusion as *quant buys VRAM, not speed*, from the other direction.
+
+**Upscaling — do not latent-upscale.** kijai: *"latent upscaling is always bad unless trained."* The correct second pass is **decode → upscale in pixel space (lanczos / any resize node / an RTX or SeedVR2 upscaler) → re-encode → low-denoise resample, and reuse the audio from the first pass.** The upscale pass corrupts audio because the latent is noised at the video level, not the lower audio level (his draft PR addresses this; until then, keep the first-pass audio). The 2K figure people quote is upscaler output — the model is trained for ~1 MP, and frame count must stay divisible by 17. A dedicated latent-upscaler node exists (`Tr1dae/ComfyUI-MiniMaxH3_LatentUpscaler`) but is exactly the approach kijai warns against.
+
+**Quant, per kijai and users:** `int8_convrot` holds quality better than `fp8` and beats `nvfp4` for speed on non-Blackwell; a 4-bit model *"isn't a good idea for most… not faster than int8, and quality loss"* — only for very low RAM. gguf ran roughly ⅓ speed.
+
+**Previews:** `Kijai/MiniMax-H3-TAE` (`taeh3.safetensors`, placed in `vae_approx`) gives fast H3 previews — quality- and speed-neutral, just nicer previews while iterating.
+
 ## Ref2VA input wiring
 
 `MiniMaxH3ReferenceToVideo` accepts up to **9 images, 3 videos, 3 video soundtracks and 3 standalone audio clips** — verified against the node's auto-grow schema.
@@ -236,7 +256,9 @@ Practical order: iterate motion and composition on `match`, switch to `max` for 
 | 226 | 9.42 s | | 345 | 14.38 s |
 |  |  | | 362 | 15.08 s |
 
-**The trained range is roughly 124–362 frames** — about 5.2 to 15.1 seconds. The node accepts up to 3600, but the tooltip marks anything longer as untested, and below 124 is equally out of distribution.
+The node accepts `5` through `3600`. **The minimum is five frames — roughly 0.21 s — not five seconds**, so short beats are available: 5, 22, 39, 56, 73, 90 and 107 frames are all valid grid values below the default.
+
+The tooltip names **~124–362** as the trained range and marks anything *longer* as untested. It makes no claim about shorter clips, so treat sub-124 lengths as accepted and unproven rather than disallowed.
 
 Anything off the grid is snapped **up** silently. Multiples of 4 are not the rule: 144 becomes 158 and 168 becomes 175 without telling you.
 

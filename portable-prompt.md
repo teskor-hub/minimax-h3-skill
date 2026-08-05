@@ -316,10 +316,19 @@ normally 350–500 words, with documented exceptions. Full-reference slots: 9 im
 accepted on its own. A reference video longer than the target length is truncated to it.
 
 Frame count snaps to a **17k+5 grid** and anything off it is rounded up silently —
-multiples of 4 are not the rule. At 24 fps: 124 = 5.17 s · 141 = 5.88 s · 158 = 6.58 s ·
-175 = 7.29 s · 192 = 8.00 s · 209 = 8.71 s · 226 = 9.42 s · 243 = 10.13 s · 260 = 10.83 s ·
-277 = 11.54 s · 294 = 12.25 s · 311 = 12.96 s · 328 = 13.67 s · 345 = 14.38 s · 362 = 15.08 s.
-The trained range is roughly 124–362.
+multiples of 4 are not the rule. The minimum is five **frames**, about 0.21 s, not five
+seconds. At 24 fps: 5 = 0.21 s · 22 = 0.92 s · 39 = 1.63 s · 56 = 2.33 s · 73 = 3.04 s ·
+90 = 3.75 s · 107 = 4.46 s · 124 = 5.17 s · 141 = 5.88 s · 158 = 6.58 s · 175 = 7.29 s ·
+192 = 8.00 s · 209 = 8.71 s · 226 = 9.42 s · 243 = 10.13 s · 260 = 10.83 s · 277 = 11.54 s ·
+294 = 12.25 s · 311 = 12.96 s · 328 = 13.67 s · 345 = 14.38 s · 362 = 15.08 s. The trained
+range is ~124–362 and longer is marked untested; shorter is accepted and simply unproven,
+not forbidden.
+
+**Split long or multi-cut sequences into separate generations** — one per shot, joined in
+an editor. More than about two cuts, or past roughly eight seconds, and splitting wins on
+both coherence and cost. A locked-off camera makes joins invisible; where framing must
+match exactly, generate the next clip as I2VA from the previous clip's last frame. Black
+frames and transitions belong in the editor, not the render.
 
 Two mechanics worth knowing when you write the prompt: the runtime **injects the
 reference labels itself** before your text, in a fixed category order — `<Picture i>:` then

@@ -132,6 +132,24 @@ Widely repeated but not found in MiniMax's docs or the ComfyUI source. Treat as 
 | Sage Attention roughly doubles speed | Community (ComfyUI docs) |
 | Quantisation quality ordering `bf16` > `int8_convrot` > `pruned int8` | Inferred from method properties; no published benchmark for H3 |
 
+## Community speed/quality ecosystem (banodoco `#minimax_h3_*`, 2026-08-05)
+
+Read from the banodoco Discord, where kijai (author of the KJ nodes and Sol-Attn) answers directly. Single-seed, mixed hardware, conflicting opinions — leads to A/B, not measurements. Covered in `references/comfyui.md`.
+
+| Claim | Type |
+|---|---|
+| CUDA 13 / torch 2.13 fixed OOM and cut times for many; "upgrade to cuda 13" | Community |
+| Sage, Memory-Efficient Sage and Sol-Attn all patch attention and are mutually exclusive | Community (kijai) |
+| Memory-Efficient Sage cuts Sage's VRAM peak, not its speed | Community (kijai) |
+| Sol-Attn harms quality at low res, near-perfect at high res; ~2× Sage at max res; Ampere+; needs Triton; `use_tma` input | Community (kijai) |
+| `lihaoyun6/ComfyUI-MiniMaxH3-Cache` "doesn't do anything better", just more aggressive settings; monkeypatches model forward | Community (kijai) |
+| Don't stack two caches; EasyCache 0.02 ≈ no-op, ~0.10 safe; Spectrum "does something more, costs memory" | Community (kijai) |
+| Step-skip caches degrade motion/consistency; moot once a step-distill LoRA ships | Community (kijai), echoed widely |
+| Offloading is essentially free on H3 (compute-bound, async overlap) | Community (kijai) — consistent with the Implementation "quant buys VRAM not speed" |
+| int8_convrot > fp8 for quality and > nvfp4 for speed off Blackwell; 4-bit not worth it unless low RAM; gguf ~⅓ speed | Community |
+| Latent upscaling is bad; decode→pixel-upscale→re-encode→low-denoise, reuse first-pass audio; upscale corrupts audio (latent noised at video level) | Community (kijai) |
+| `Kijai/MiniMax-H3-TAE` (`taeh3.safetensors` in `vae_approx`) for fast previews | Community (kijai) |
+
 ## What is missing
 
 No controlled A/B data exists here for: the scheduler comparison, the sigma-shift defaults, quality deltas between quants, whether 20 steps differ visibly from 30, whether `[video editing]` behaves differently from `[reference generation]` under local inference, or whether writing in MiniMax's documented format measurably beats plain prose given that ComfyUI runs no rewriter. Those would need fixed-seed paired renders. Until someone does that, none of them should be stated as measured.
