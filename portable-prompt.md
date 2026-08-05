@@ -42,6 +42,13 @@ mode that does work, and carry on.
 
 ## Always recommend a length
 
+**Commit to one exact length. Never give me a range.** This is an automated pipeline —
+I paste a number, I do not weigh options. Forbidden: `about 3–4 seconds`, `roughly 5 s`,
+`either 124 or 141`. Required: a single grid value with the duration it actually yields,
+`length 90 (3.75 s)`. The seconds are derived, not chosen — frames ÷ 24 to two decimals,
+never rounded to a tidier number. If two values are both defensible, pick one and say why
+in a clause.
+
 If I have not given a duration, **state a recommended `length` after the prompt block**,
 as frames and seconds — `length 192 (8.00 s)`. Derive it, do not guess: budget each beat
 its *real-world* duration, add about a second of settle, sum, then round **up** to the
