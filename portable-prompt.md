@@ -291,6 +291,8 @@ always notice when they are gone.
 
 **Motion arrives as a strip, not as a video.** A reference clip is measured for its cut list and duration, then a horizontal contact sheet of its frames is wired into an image slot; the clip itself is not attached. A reference video is encoded and sampled into context at 2 fps, which costs far more than the poses it delivers. `<Video N>` stays documented for the case where one genuinely is wired, but it is not the default here.
 
+**Identify before you describe — the zoom pass.** A contact sheet resolves pose and trajectory and nothing else; at six panels across an 1800-pixel strip each frame is about 300 px wide. Before naming any object the subject holds or touches, crop it from the full-size frame and look — `ffmpeg -ss T -i src.mp4 -frames:v 1 -vf "crop=W:H:X:Y,scale=2*W:2*H" zoom.png`. A plausible guess is what gets rendered: a hair video makes "comb" plausible when the object is a makeup pencil held up like a plumb line, and the meaning of the gesture goes with it. Zoom on the same pass for marks on the reference actor that must be excluded — tattoos, jewellery, a watch — since you cannot exclude what you never saw. If it is still unidentifiable after zooming, say so and ask; a confident wrong noun becomes a rendered prop.
+
 ## The three-slot reference convention
 
 The standing wiring for a reel built on an existing clip is three `Load Image` nodes, in

@@ -30,6 +30,20 @@ Mixed evidence, and the difference matters. **Official** marks a rule stated in 
 
 **What no wording can fix.** Scale. A centimetre-wide mark is a handful of pixels in a wide shot and will not survive it at any prompt length. Where the detail has to read, frame at medium close-up or tighter and state that it is visible; in a wide shot, expect it to be absent.
 
+## The prop is wrong, or the gesture makes no sense with it
+
+**Cause.** The object was named from a thumbnail. A six-panel strip across 1800 pixels gives about 300 px per frame — enough for an arm position, not for what is in the hand. The gap gets filled with whatever the context makes plausible, and the plausible noun is often wrong: in a hair-styling clip a thin dark object reads as a comb when it is a makeup pencil held upright against the brow to check that a parting is straight. Observed 2026-08-19; the wrong noun reached `subject_definitions` and was rendered as a real prop.
+
+**Fix.** Crop the hand region from the full-resolution frame at the moment the object is closest to camera, upscale it, and look before writing: `ffmpeg -ss T -i src.mp4 -frames:v 1 -vf "crop=W:H:X:Y,scale=2*W:2*H" zoom.png`. Describe what the object *does*, not only what it looks like — the function fixes the gesture. Zoom on the same pass over the reference actor's tattoos, jewellery and watch, since each needs an explicit exclusion in `retention_analysis` and none can be excluded unseen. If it remains unidentifiable, say so and ask rather than guessing.
+
+## The subject performs the wrong activity — dancing instead of the described action
+
+**Cause.** Word frequency, not scene logic. Count the cues in the description: if incidental movement is named five or six times (bouncing, weight shifting, moving to the beat, shoulders rolling, mouthing along to music) and the actual subject of the clip is named once near the end, the repeated activity is what the conditioning carries. Observed on a 362-frame Ref2VA render from a motion strip on 2026-08-19: the written beats were accurate, and the output was a dance.
+
+**Contributing cause.** Beats written as prose second-counts — `for the first two and a half seconds`, `between five and eight seconds`. The model cannot count, so those phrases order nothing; the description reads as an unordered set of actions and the most frequent one wins.
+
+**Fix.** Demote the incidental movement to a single subordinate clause. Enumerate the reference strip's panels one sentence each, in reading order, joined by ordinals — *she begins, next, then, finally* — so the ordering rests on something the model can see. Give the key action its own sentence in every panel where it occurs. Change one of these at a time; if the activity is right but coherence still falls apart, the next lever is splitting the render, not rewriting the text again.
+
 ## A reference video drags its wardrobe, location or lighting into the output
 
 **Cause.** The video was given no scoped role, so it contributes on every axis. `Do not take the person from <Video 1>` is a text instruction competing against a data signal, with no negative channel at CFG 1 to enforce it.

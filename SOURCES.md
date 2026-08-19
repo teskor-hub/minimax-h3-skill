@@ -118,6 +118,10 @@ Not from MiniMax, not from the source — craft rules adopted because they held 
 | The three-slot convention — identity photo, look frame, motion strip — as the standing wiring for a clip rebuild | Convention adopted in this project, not from MiniMax |
 | A reference video is not wired at all; its cost outweighs what a motion strip already delivers | User report (2026-08-19), uncontrolled; the encode-and-2-fps-context cost itself is Implementation |
 | A motion strip transfers poses and their order but no timing | Follows from it being a still image; the label order itself is Implementation |
+| Repeated ambient-motion vocabulary outweighs a key action named once, and the render performs the repeated activity | Empirical — one observed failure (2026-08-19), uncontrolled |
+| Ordinals mapped to strip panels order a sequence where prose second-counts do not | Empirical, consistent with the documented "the model cannot count" rule |
+| A stated trajectory ("the pencil only rises") holds an order that a list of equal-weight poses does not | Empirical, and an instance of the documented structure-beats-instruction rule |
+| Props and marks named from a contact sheet are unreliable; crop at native resolution before naming them | Arithmetic (panel width) plus one observed misread, 2026-08-19 |
 | An omitted `non_diegetic_music` field tends to produce unwanted music | Empirical |
 | Objects absent from the references rarely materialise mid-shot | Empirical |
 | Small distinctive features (a face tattoo, freckles, a scar, a piercing) are dropped unless named in words; naming them by body landmark and restating them in `retention_analysis` is what retains them | Empirical — consistent with the Implementation fact that reference stills enter as vision tokens through the VLM, but the retention benefit itself is not measured |

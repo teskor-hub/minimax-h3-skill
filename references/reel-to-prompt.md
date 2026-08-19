@@ -32,7 +32,19 @@ Sanity-check the shot table it prints. If a five-second reel reports twenty shot
 
 **2. Map shots to beats, using the measured times.** A shot from 1.24 s to 2.05 s is a 0.81-second beat, so write it as one. Do not round to something comfortable — that is exactly how a fall becomes moon gravity.
 
-**3. Pick `length` from `h3_length_options`.** The manifest brackets the source duration with valid `17k+5` frame counts. Take the nearest one and adjust your beats to fit it; a 6.4-second reel becomes 158 frames (6.58 s), so every beat stretches by about 3 %.
+**3. Pick `length` from `h3_length_options` — the value at or above the source duration, never below it.** The manifest brackets the source with valid `17k+5` frame counts. Take the one **≥** the duration being covered and trim the surplus in the editor; a 6.4-second reel becomes 158 frames (6.58 s), so every beat stretches by about 3 %. A 14.90-second take becomes 362 (15.08 s).
+
+Rounding down is not a cheaper draft. **A reference video longer than the target is truncated to the target**, so a 14.90-second motion reference asked for at 124 frames contributes only its first 5.17 s — the rest of the choreography is absent, not compressed. The single-clip ceiling is 362 frames, 15.08 s.
+
+**3b. Decide the shape from the cut count, before writing anything.**
+
+- **No cuts, source ≤ 15.08 s** — one clip at the bracketing grid value.
+- **No cuts, source > 15.08 s** — one render cannot hold it. Ask the user whether to split the take into consecutive segments of at most 15.08 s, or to keep one chosen 15-second section.
+- **Cuts present** — ask whether they want one render per cut (the only option past 15.08 s total, and the better one for hard cuts) or a single full pass carrying the cuts internally (only when the whole source fits inside 15.08 s, and shaky past about two cuts).
+
+When several clips cover segments of one source, **trim the reference video to each segment before wiring it**. Truncation keeps the head, so an untrimmed file makes clip 2 copy clip 1's motion.
+
+**3c. Write the motion as a timeline, not a summary.** If the point is to reproduce the choreography, the description accounts for the whole running time in order, roughly one beat per one to two seconds, each naming what the hands, head and body do at that moment. `She makes a few quick adjustments` leaves fourteen seconds for the model to fill with movement of its own, and explicit text outweighs a video reference — so the summary wins and the copy fails.
 
 **4. Decide the mode.**
 
@@ -45,6 +57,38 @@ Sanity-check the shot table it prints. If a five-second reel reports twenty shot
 Recreating a reel with your own person is almost always **Ref2VA**: the reel supplies structure, your photos supply identity.
 
 **5. Say which shots need reference photos.** Go through the shot table and mark where the subject is visible and at what angle — front, three-quarter, back, close-up, full-body. That list is the shopping list for reference stills, and it is the single most useful thing this workflow produces. A reel that shows the subject from behind needs a reference covering that; without one the model invents it, and that is where identity collapses.
+
+## Identify before you describe — the zoom pass
+
+A contact sheet is enough to read **pose and trajectory** and nothing else. At six panels
+across an 1800-pixel strip each frame is roughly 300 px wide; at ten panels it is 180. That
+resolves an arm position. It does not resolve what is in the hand, and a plausible guess is
+exactly what gets rendered — a hair video makes "comb" plausible when the object is a
+makeup pencil held up like a plumb line, and the whole meaning of the gesture goes with it.
+
+**Before naming anything, crop it at native resolution and look at it.** One pass, in this
+order:
+
+1. **Every object the subject holds or touches.** Crop the hand region from the full-size
+   frame at the moment the object is closest to camera.
+2. **The action the object performs.** A pencil raised beside a brow is *measuring*, not
+   *combing*. The function determines the whole gesture — describe it, not just the shape.
+3. **Marks on the reference actor that must not transfer** — tattoos, jewellery, a watch, a
+   hair tie. Each one needs an explicit exclusion in `retention_analysis`, and you cannot
+   exclude what you never saw.
+4. **The subject's own distinguishing details** in the identity photo, at full size.
+5. **Burned-in text** anywhere in the frame — crop it off the strip rather than forbidding
+   it in words.
+
+```bash
+# object in the hand, native pixels, upscaled for reading
+ffmpeg -ss 8.60 -i src.mp4 -frames:v 1 -vf "crop=300:300:330:330,scale=600:600" zoom.png
+```
+
+**If you cannot identify it after zooming, say so and ask.** "A thin dark object in her
+right hand, I cannot tell what it is" is a usable line in a report. A confident wrong noun
+is not — it survives into `subject_definitions`, gets rendered as a real prop, and costs a
+generation to find out.
 
 ## What transfers and what does not
 

@@ -334,6 +334,66 @@ its person, hair, wardrobe, location or on-screen text appears.
 per pose. Six panels or fewer, or two strips, keeps each pose readable — the same
 resolution arithmetic that makes a character sheet a poor identity source.
 
+### Identify before you describe — the zoom pass
+
+A contact sheet is enough to read **pose and trajectory** and nothing else. At six panels
+across an 1800-pixel strip each frame is roughly 300 px wide; at ten panels it is 180. That
+resolves an arm position. It does not resolve what is in the hand, and a plausible guess is
+exactly what gets rendered — a hair video makes "comb" plausible when the object is a
+makeup pencil held up like a plumb line, and the whole meaning of the gesture goes with it.
+
+**Before naming anything, crop it at native resolution and look at it.** One pass, in this
+order:
+
+1. **Every object the subject holds or touches.** Crop the hand region from the full-size
+   frame at the moment the object is closest to camera.
+2. **The action the object performs.** A pencil raised beside a brow is *measuring*, not
+   *combing*. The function determines the whole gesture — describe it, not just the shape.
+3. **Marks on the reference actor that must not transfer** — tattoos, jewellery, a watch, a
+   hair tie. Each one needs an explicit exclusion in `retention_analysis`, and you cannot
+   exclude what you never saw.
+4. **The subject's own distinguishing details** in the identity photo, at full size.
+5. **Burned-in text** anywhere in the frame — crop it off the strip rather than forbidding
+   it in words.
+
+```bash
+# object in the hand, native pixels, upscaled for reading
+ffmpeg -ss 8.60 -i src.mp4 -frames:v 1 -vf "crop=300:300:330:330,scale=600:600" zoom.png
+```
+
+**If you cannot identify it after zooming, say so and ask.** "A thin dark object in her
+right hand, I cannot tell what it is" is a usable line in a report. A confident wrong noun
+is not — it survives into `subject_definitions`, gets rendered as a real prop, and costs a
+generation to find out.
+
+### Write the strip panel by panel, and count your motion words
+
+**Find the through-line before you write the panels.** A strip of poses is not six
+independent moments — it is usually one continuous movement sampled at intervals. Say what
+travels and in which direction (`the comb climbs from her hip to the crown of her head along
+the centre line of her body, and never travels back down`), then write the panels as
+waypoints on that path. Six equal-weight poses can be reassembled in any order, and the
+model will reassemble them into whatever generic activity the vocabulary suggests; a stated
+trajectory cannot be reordered. Naming the one travelling element and saying the rest of the
+body stays quiet blocks the wrong activity by construction rather than by prohibition.
+
+**Enumerate the panels in order — one sentence per panel**, in the same left-to-right order
+the strip reads. Prose second-counts (`for the first two and a half seconds`, `between five
+and eight seconds`) schedule nothing: the model cannot count, so a timeline written that way
+arrives as an unordered bag of actions. Ordinals — *she begins … next … then … finally* —
+map onto the panels the model can actually see, which is the only ordering it has.
+
+**Ambient motion outcompetes the point of the shot.** Count how many times each activity is
+named before sending the prompt. A description that says bouncing, weight shifting, moving
+to the beat, shoulders rolling and mouthing along to music, and then names the actual
+subject of the clip once at the end, renders as dancing — the model weights what is
+repeated, not what is climactic. Name incidental movement once, in a subordinate clause,
+and give the key action its own sentence in every panel where it appears.
+
+**Crop captions and titles out of the strip.** Burned-in text repeated across every panel is
+the most heavily repeated visible content in the whole reference. Forbidding it in
+`retention_analysis` is second best; cutting it off the image is free.
+
 ## Step 4 — mode per clip
 
 | The clip needs | Mode | Checkpoint |
@@ -648,6 +708,8 @@ Rules for what goes in it:
 | Rushed or teleporting | timeline longer than the frame count |
 | Only the first seconds of the reference motion are copied | the target was shorter than the reference, so it was truncated — set the length from the measured source duration |
 | The clip invents its own choreography instead of the reference's | the description summarised the motion; write a beat per 1–2 s across the whole length |
+| The subject just dances, or does the wrong activity entirely | count the motion words — repeated ambient movement outweighs a key action named once; demote it to one clause |
+| The poses arrive out of order | second-counts in prose do not schedule; enumerate the strip's panels with ordinals instead |
 | A segment clip repeats the first segment's motion | the whole reference file was wired in; truncation keeps the head, so cut the video to that segment first |
 | Reel feels floaty overall | beat timings were invented, not measured — run `reel_shots.py` on the reference |
 | Roles swapped by themselves | labels follow slot index in a fixed category order, not filenames |
