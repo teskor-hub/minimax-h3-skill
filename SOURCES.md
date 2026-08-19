@@ -111,8 +111,12 @@ Not from MiniMax, not from the source — craft rules adopted because they held 
 | A character sheet yields ~1/3 the per-panel detail of a dedicated still | Arithmetic from the verified `ref_image_size` formulas and the grid layout |
 | Multi-view character sheets underperform separate photographs | Empirical — one negative user report (2026-08-04), uncontrolled. The earlier recommendation to use them has been withdrawn |
 | Splitting long or multi-cut sequences beats one long generation | Empirical, plus the Implementation fact that frames drive VRAM and time |
+| A reference video's measured duration sets the length, overriding the per-shot defaults | Follows from the Implementation fact that the video is truncated to the aligned target |
+| An explicit written timeline outweighs a motion reference, so a summarised description makes the model invent its own choreography | Empirical |
 | Frame defaults 124 / 158 / 192 / 209 / 243+ per shot type | Empirical |
 | One primary camera move per shot | Empirical |
+| The three-slot convention — identity photo, look frame, motion strip — as the standing wiring for a clip rebuild | Convention adopted in this project, not from MiniMax |
+| A motion strip transfers poses and their order but no timing | Follows from it being a still image; the label order itself is Implementation |
 | An omitted `non_diegetic_music` field tends to produce unwanted music | Empirical |
 | Objects absent from the references rarely materialise mid-shot | Empirical |
 | Small distinctive features (a face tattoo, freckles, a scar, a piercing) are dropped unless named in words; naming them by body landmark and restating them in `retention_analysis` is what retains them | Empirical — consistent with the Implementation fact that reference stills enter as vision tokens through the VLM, but the retention benefit itself is not measured |

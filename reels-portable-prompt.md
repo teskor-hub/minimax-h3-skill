@@ -88,6 +88,70 @@ from a frontal close-up in I2VA, say — state it plainly, propose the mode that
 and carry on. When something is unclear but not load-bearing, choose, note it in block 5,
 and keep moving.
 
+## Step 0 — a reference video decides the shape, before anything else
+
+When a reference video is in play, its measurement drives the plan. Work in this order, no
+exceptions:
+
+**1. Detect the cuts first.** `tools/reel_shots.py` measures them. If the user has not run
+it, ask them to, or ask outright how many cuts the clip has and where. Never infer a cut
+count from a description of the footage, and never start writing before you have it.
+
+**2. Read the source duration from the same measurement.** That number sets the length. The
+Step 2 defaults do not apply here.
+
+**3. Branch on the cut count.**
+
+**No cuts — one continuous take:**
+- **Source ≤ 15.08 s** → **one clip**, length = the smallest `17k+5` value that is **≥ the
+  source duration**. A 14.90-second take is `362 (15.08 s)`, and the surplus 0.18 s is
+  trimmed in the editor. It is not 124.
+- **Source > 15.08 s** → one render cannot hold it. Say so, then ask which the user wants:
+  split the take into consecutive segments of at most 15.08 s each, or keep one chosen
+  15-second section and drop the rest. Do not decide this silently.
+
+**Cuts present** — ask which the user wants, and state what each costs:
+- **(a) One render per cut.** Each shot takes its length from its own measured duration;
+  identity is restated in every clip; joins are made in the editor. This is the *only*
+  option once the source runs past 15.08 s, and the better one whenever the cuts are hard.
+- **(b) One full pass.** A single render carrying the cuts internally as `[Shot 2] At
+  00:03.500, …`. Available only when the whole source is ≤ 15.08 s. Nothing to assemble,
+  but coherence degrades past about two cuts.
+
+Offer (a) with a concrete segmentation — the measured shots, or, for a long single take,
+even segments of roughly 5–7 s cut at natural pauses — and let the user choose.
+
+**4. The ceiling is per render, not per reel: 362 frames, 15.08 s.** Never plan a single
+clip above it. A reel gets longer by having more clips, never by stretching one.
+
+**5. Never take a length from the Step 2 defaults when a motion reference exists.** Those
+defaults are for content that exists only as words. A measured source overrides them every
+time.
+
+**6. Why a short target is not a cheap draft.** A reference video longer than the target is
+**truncated to the target**, then trimmed down to the grid. Ask for 124 frames against a
+14.90-second reference and the model sees only its first 5.17 s — the rest of the
+choreography is not weakened, it is absent. Shortening the length silently changes which
+motion is being copied.
+
+**7. When a clip covers a segment of the source, cut the reference video to that segment
+before wiring it.** Truncation always keeps the head, so clip 2 handed the whole file would
+copy clip 1's motion. Say this in the shopping list: which trimmed segment goes with which
+clip.
+
+## Copying a reference's motion — write the timeline, not a summary
+
+When the point is to reproduce a reference's choreography, `detailed_description` has to
+account for the whole running time, in order — roughly one beat per one to two seconds,
+each naming what the hands, head and body do. `She makes a few quick grooming adjustments`
+is a summary: across 15 s the model fills the gap with choreography of its own, and the
+video is only a weak pull against explicit text. Text and video must describe the same
+performance, or the text wins and the copy fails.
+
+Keep the beats in real time. If the measurement puts the hand at the hairline at 6.2 s, that
+beat is written where 6.2 s falls, not "somewhere in the middle". The written timeline and
+the rendered length must end together.
+
 ## Step 1 — cut the reel into clips
 
 **One render per shot is the default.** More than about two cuts, or past roughly eight
@@ -135,6 +199,10 @@ not an edit.
 
 ## Step 2 — length per clip
 
+**A measured reference video wins over everything in this section.** If Step 0 produced a
+source duration, the length is the smallest `17k+5` value at or above it, capped at 362. The
+defaults below apply only to clips whose content exists only as words.
+
 **Commit to one exact length per clip. Never give a range.** This is an automated pipeline —
 the user pastes a number, they do not weigh options. Forbidden: `about 3–4 seconds`,
 `roughly 5 s`, `either 124 or 141`. Required: a single grid value with the duration it
@@ -159,7 +227,7 @@ event speed, so an over-long clip does not give the model room — it gives slow
 | Holding a final pose while motion settles | 1–2 s |
 | Spoken English | ~2.7 words per second |
 
-Defaults when the content is not yet detailed: **124** (5.17 s) for one action on a static
+Defaults **only when no reference video is involved and the content is not yet detailed**: **124** (5.17 s) for one action on a static
 camera · **158** (6.58 s) with one camera move · **192** (8.00 s) for an entrance or
 approach · **209** (8.71 s) for action → reaction → settle. For dialogue, size it from the
 word count at ~2.7 w/s.
@@ -228,6 +296,34 @@ collarbone with a wispy curtain fringe, and long almond nails painted black.
 Ask for this list when a reference first appears — *which details must survive: tattoos,
 freckles, scars, piercings, hair length, nails?* — because users rarely volunteer them and
 always notice when they are gone.
+
+## The three-slot reference convention
+
+The standing wiring for a reel built on an existing clip is three `Load Image` nodes, in
+this order. Labels follow slot index, so they arrive as `<Picture 1>`, `<Picture 2>`,
+`<Picture 3>` — and **no `<Video N>` label exists at all** unless a clip is wired into a
+video slot.
+
+| Slot | What it is | How it enters the prompt |
+|---|---|---|
+| `<Picture 1>` | **Identity photo** — passport-style: frontal, evenly lit, plain background, face large in frame | cited inside `<Subject 1>`; never given its own picture entry |
+| `<Picture 2>` | **Look frame** — a composed still of the subject as she appears in *this* video: wardrobe, hair, location, framing, light | cited inside the subject definitions for wardrobe and location, and given its own entry as the composition anchor |
+| `<Picture 3>` | **Motion strip** — a horizontal contact sheet of frames from the reference clip, chronological left to right | cited inside a `<Subject N>` that defines the action progression; never given its own picture entry |
+
+**A strip carries poses and their order, not timing.** It is a still image: the model can
+read what happens and in what sequence, and nothing at all about pacing. The written
+timeline in `detailed_description` is then the only thing that sets speed, so it has to
+cover the whole length beat by beat — more strictly than when a real video reference is
+attached, not less. Take the timings from a measurement of the source clip even though the
+strip itself is what gets wired.
+
+**Scope the strip's own actor** exactly as you would a reference video: `weak_reference` in
+`retention_analysis`, stating that only the poses and their order transfer and that none of
+its person, hair, wardrobe, location or on-screen text appears.
+
+**Keep the panels large.** An 1800-pixel strip cut into ten frames leaves about 180 pixels
+per pose. Six panels or fewer, or two strips, keeps each pose readable — the same
+resolution arithmetic that makes a character sheet a poor identity source.
 
 ## Step 4 — mode per clip
 
@@ -541,6 +637,9 @@ Rules for what goes in it:
 | Falls look weightless | beat too long; ~0.5 s plus a hard stop |
 | Motion mush | one *primary* camera move per shot; a framing tilt alongside it is fine |
 | Rushed or teleporting | timeline longer than the frame count |
+| Only the first seconds of the reference motion are copied | the target was shorter than the reference, so it was truncated — set the length from the measured source duration |
+| The clip invents its own choreography instead of the reference's | the description summarised the motion; write a beat per 1–2 s across the whole length |
+| A segment clip repeats the first segment's motion | the whole reference file was wired in; truncation keeps the head, so cut the video to that segment first |
 | Reel feels floaty overall | beat timings were invented, not measured — run `reel_shots.py` on the reference |
 | Roles swapped by themselves | labels follow slot index in a fixed category order, not filenames |
 | Can't tell if an edit helped | the seed is on randomize |

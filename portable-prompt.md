@@ -53,6 +53,8 @@ I paste a number, I do not weigh options. Forbidden: `about 3–4 seconds`, `rou
 never rounded to a tidier number. If two values are both defensible, pick one and say why
 in a clause.
 
+**A measured reference video overrides all of this.** When a reference video supplies the motion, its measured duration sets the length: take the smallest `17k+5` value at or above the source duration, capped at 362 frames (15.08 s), and trim the surplus in the editor. The defaults below are for content that exists only as words. This matters because a reference video longer than the target is **truncated to the target** — asking for 124 frames against a 14.90-second reference means the model sees only its first 5.17 s, so the rest of the choreography is absent rather than compressed. If the source runs past 15.08 s, one render cannot hold it: say so and ask whether to split it into consecutive segments of at most 15.08 s or to keep one chosen section. And detect the cuts before choosing anything — with cuts present, ask whether the user wants one render per cut or a single full pass, the latter only when the whole source fits inside 15.08 s.
+
 If I have not given a duration, **state a recommended `length` after the prompt block**,
 as frames and seconds — `length 192 (8.00 s)`. Derive it, do not guess: budget each beat
 its *real-world* duration, add about a second of settle, sum, then round **up** to the
@@ -72,7 +74,7 @@ does not give the model room — it gives me slow motion.
 | Holding a final pose while motion settles | 1–2 s |
 | Spoken English | ~2.7 words per second |
 
-Defaults when the content is not yet detailed: **124** (5.17 s) for one action on a
+Defaults **only when no reference video is involved and the content is not yet detailed**: **124** (5.17 s) for one action on a
 static camera · **158** (6.58 s) with one camera move · **192** (8.00 s) for an entrance
 or approach · **209** (8.71 s) for action → reaction → settle · **243+** once there are
 cuts. For dialogue, size it from the word count at ~2.7 w/s.
@@ -287,6 +289,34 @@ Ask for this list when a reference first appears — *which details must survive
 freckles, scars, piercings, hair length, nails?* — because users rarely volunteer them and
 always notice when they are gone.
 
+## The three-slot reference convention
+
+The standing wiring for a reel built on an existing clip is three `Load Image` nodes, in
+this order. Labels follow slot index, so they arrive as `<Picture 1>`, `<Picture 2>`,
+`<Picture 3>` — and **no `<Video N>` label exists at all** unless a clip is wired into a
+video slot.
+
+| Slot | What it is | How it enters the prompt |
+|---|---|---|
+| `<Picture 1>` | **Identity photo** — passport-style: frontal, evenly lit, plain background, face large in frame | cited inside `<Subject 1>`; never given its own picture entry |
+| `<Picture 2>` | **Look frame** — a composed still of the subject as she appears in *this* video: wardrobe, hair, location, framing, light | cited inside the subject definitions for wardrobe and location, and given its own entry as the composition anchor |
+| `<Picture 3>` | **Motion strip** — a horizontal contact sheet of frames from the reference clip, chronological left to right | cited inside a `<Subject N>` that defines the action progression; never given its own picture entry |
+
+**A strip carries poses and their order, not timing.** It is a still image: the model can
+read what happens and in what sequence, and nothing at all about pacing. The written
+timeline in `detailed_description` is then the only thing that sets speed, so it has to
+cover the whole length beat by beat — more strictly than when a real video reference is
+attached, not less. Take the timings from a measurement of the source clip even though the
+strip itself is what gets wired.
+
+**Scope the strip's own actor** exactly as you would a reference video: `weak_reference` in
+`retention_analysis`, stating that only the poses and their order transfer and that none of
+its person, hair, wardrobe, location or on-screen text appears.
+
+**Keep the panels large.** An 1800-pixel strip cut into ten frames leaves about 180 pixels
+per pose. Six panels or fewer, or two strips, keeps each pose readable — the same
+resolution arithmetic that makes a character sheet a poor identity source.
+
 ## Camera motion — type + amplitude + speed
 
 **Type** — `Zoom In / Zoom Out` (focal length, body still) · `Push In / Pull Out` (body
@@ -420,6 +450,8 @@ reference cannot carry structure through the prompt path.
 | Falls look weightless | beat too long; ~0.5 s plus a hard stop |
 | Motion mush | one *primary* camera move per shot; a framing tilt alongside it is fine |
 | Rushed or teleporting | timeline longer than the frame count |
+| Only the first seconds of the reference motion are copied | the target was shorter than the reference, so it was truncated — set the length from the measured source duration |
+| The output invents its own choreography instead of the reference's | the description summarised the motion; write a beat per 1–2 s across the whole length |
 | Unwanted music | you left `non_diegetic_music` out |
 | Roles swapped by themselves | labels follow slot index in a fixed category order, not filenames |
 | Can't tell if an edit helped | the seed is on randomize |
