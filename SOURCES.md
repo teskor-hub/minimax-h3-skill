@@ -115,6 +115,8 @@ Not from MiniMax, not from the source — craft rules adopted because they held 
 | One primary camera move per shot | Empirical |
 | An omitted `non_diegetic_music` field tends to produce unwanted music | Empirical |
 | Objects absent from the references rarely materialise mid-shot | Empirical |
+| Small distinctive features (a face tattoo, freckles, a scar, a piercing) are dropped unless named in words; naming them by body landmark and restating them in `retention_analysis` is what retains them | Empirical — consistent with the Implementation fact that reference stills enter as vision tokens through the VLM, but the retention benefit itself is not measured |
+| A detail smaller than a few pixels at the shot's scale cannot be retained by any wording | Arithmetic, not a model claim |
 | Cropping heavily foreshortened hands reduces finger artifacts | Empirical |
 | `ref_image_size: max` is never worse for identity | Inferred from the formulas; the slowdown is Implementation |
 | A higher-precision encoder improves identity in Ref2VA | Inferred from the architecture, not measured |

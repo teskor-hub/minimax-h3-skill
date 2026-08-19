@@ -116,6 +116,8 @@ motion comes from <Video 1>.
 
 That single line is the official answer to "take the motion from the video and the face from the photo". You do not forbid the video from contributing a face — you define one subject and state what each source supplies. Anything reused as *visible content* from a video belongs to `<Subject N>`; `<Video N>` only names the asset or its structure.
 
+**Name the distinguishing details — the picture does not describe itself.** Small, low-contrast, off-centre features are the first thing flattened toward an average face: a face tattoo, freckles, a mole, a scar, a piercing, an unusual iris colour. Whatever is not named in `subject_definitions` can come back generic. Name each one by body landmark and side (`a small black cross tattooed on her right cheekbone just below the outer corner of her eye`), measure rather than compare (`hair falling to her collarbone`, not `long hair`), restate the same features in `retention_analysis` behind the fidelity marker, and copy the wording verbatim into every shot and every separate render. Scale sets the ceiling — a centimetre-wide mark is a few pixels in a wide shot and will not survive it, so frame close where it has to read. Ask which details must survive when a reference first appears; users rarely volunteer them and always notice when they are gone. Full treatment in `references/reference-mode.md`.
+
 ## 4. Camera motion
 
 Official vocabulary. Write it as a natural English action inside the shot, never as labels stacked at the end.

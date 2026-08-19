@@ -35,6 +35,10 @@ wasted generation. Ask me when any of this is unclear instead of guessing:
 - **What must not change** — identity anchors, wardrobe, location, grain.
 - **Whether the camera itself must move**, since that is the weakest axis and may need a
   reference video rather than words.
+- **Which distinguishing details must survive** — tattoos and exactly where, freckles,
+  scars, moles, piercings, hair length, nail colour. These are what "it doesn't look like
+  her" almost always turns out to mean, and they have to be written into the prompt rather
+  than left for the model to find in the image.
 
 Give me a recommendation, not just a list of options. If what I asked for will not work —
 a back view demanded from a frontal close-up in I2VA, say — tell me plainly, propose the
@@ -245,6 +249,44 @@ asset or its structure and never replaces subject labels. Labels are numbered pe
 slot index, inside a fixed category order — images, then videos, then standalone audio —
 so a video's soundtrack claims `<Audio 1>` ahead of any standalone clip.
 
+## Name the distinguishing details — the picture does not describe itself
+
+A reference image arrives as vision tokens, and the small, low-contrast, off-centre features
+are the first to be flattened toward an average face: a face tattoo, freckles, a mole, a
+scar, a piercing, an unusual iris colour, an asymmetric fringe. Whatever is not named in
+`subject_definitions` can come back generic — the model is under no obligation to notice it.
+This is the usual content of "it doesn't look like her" when the likeness is otherwise close.
+
+So name them, positively, by location and size:
+
+```
+<Subject 1> is the woman whose appearance comes from <Picture 1>, <Picture 2> and <Picture 3>:
+a small black cross tattooed on her right cheekbone just below the outer corner of her eye,
+dense freckles across her nose and cheeks, light-hazel eyes, black wavy hair falling to her
+collarbone with a wispy curtain fringe, and long almond nails painted black.
+```
+
+- **Locate every mark on a body landmark, and say which side.** "A cross tattoo under the
+  eye" gets placed at random and swaps sides between shots; "on her right cheekbone, below
+  the outer corner of her eye" does not.
+- **Measure, don't compare.** "Long hair" is relative to nothing. "Falls to the collarbone",
+  "cropped above the ear", "a fringe cut to the eyebrows" are checkable against a frame.
+- **Three to eight concrete details beat a paragraph of adjectives.** Every item must be
+  verifiable by looking; "striking features", "a unique look" carry nothing.
+- **Restate them in `retention_analysis`**, so the fidelity marker has something to bind to:
+  `<Subject 1> (appears in [Shot 1], [Shot 2]): fully_preserved - the cross tattoo on the
+  right cheekbone, the freckles, hair length at the collarbone, the black nails.`
+- **Copy the wording verbatim** between shots and between separate renders. Paraphrasing a
+  subject definition is how identity drifts across a sequence.
+- **Scale sets the ceiling.** A centimetre-wide tattoo is a few pixels in a wide shot and
+  will not survive it. Where a small mark has to read, frame at medium close-up or tighter
+  and state that it is visible; in a wide shot expect it to be absent rather than fighting
+  for it.
+
+Ask for this list when a reference first appears — *which details must survive: tattoos,
+freckles, scars, piercings, hair length, nails?* — because users rarely volunteer them and
+always notice when they are gone.
+
 ## Camera motion — type + amplitude + speed
 
 **Type** — `Zoom In / Zoom Out` (focal length, body still) · `Push In / Pull Out` (body
@@ -363,6 +405,9 @@ reference cannot carry structure through the prompt path.
 | Symptom | Fix |
 |---|---|
 | Identity drifts or flickers | identity in `<Subject N>` not `<Picture N>`; merge sources in one subject |
+| A tattoo, freckles, a scar or a piercing never appear | they were never written out — name them by body landmark in `subject_definitions` and again in `retention_analysis` |
+| A small mark appears on the wrong side, or moves | the placement was vague; state the side and the landmark, in identical words every time |
+| A distinctive detail is lost only in the wide shots | it is a few pixels at that scale — frame closer, or accept its absence there |
 | Reference video drags in wardrobe/location | scope it `weak_reference` in `retention_analysis`; better, use a reference with no person |
 | A physical camera or phone appears | remove the noun from the action; use the motion vocabulary, or `POV` |
 | Subject rotates instead of the camera | `Arc Shot` + forbid body rotation by part + describe background parallax |

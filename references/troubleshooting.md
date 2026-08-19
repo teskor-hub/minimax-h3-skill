@@ -22,6 +22,14 @@ Mixed evidence, and the difference matters. **Official** marks a rule stated in 
 
 **Fix.** Define one merged subject naming each source's contribution: `<Subject 1> is the woman whose appearance comes from <Picture 1> and whose walking motion comes from <Video 1>.` Scope the video's role in `retention_analysis` with `weak_reference` and an explicit list of what it does *not* supply. Set `ref_image_size` to `max`. Shorten long camera travel — a three-quarter back view survives where a full 180° does not. On a large-VRAM card, step the encoder up to `int8_convrot` or `bf16`.
 
+## A tattoo, freckles, a scar or another distinctive detail never appears
+
+**Cause.** It was never written out. A reference image arrives as vision tokens, and small, low-contrast, off-centre marks are the first thing flattened toward an average face. The model is under no obligation to notice a one-centimetre tattoo on a cheekbone, and nothing in the format forces it to. This is the usual content of "it doesn't look like her" when the likeness is otherwise close.
+
+**Fix.** Name every distinguishing feature in `subject_definitions`, located on a body landmark and with a side: `a small black cross tattooed on her right cheekbone just below the outer corner of her eye`. Measure rather than compare — `hair falling to her collarbone`, not `long hair`. Restate the same features in `retention_analysis` behind the fidelity marker so it has something to bind to. Copy the wording verbatim into every shot and every separate render; paraphrasing is how the detail drifts across a sequence.
+
+**What no wording can fix.** Scale. A centimetre-wide mark is a handful of pixels in a wide shot and will not survive it at any prompt length. Where the detail has to read, frame at medium close-up or tighter and state that it is visible; in a wide shot, expect it to be absent.
+
 ## A reference video drags its wardrobe, location or lighting into the output
 
 **Cause.** The video was given no scoped role, so it contributes on every axis. `Do not take the person from <Video 1>` is a text instruction competing against a data signal, with no negative channel at CFG 1 to enforce it.
