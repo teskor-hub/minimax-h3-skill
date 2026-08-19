@@ -2,7 +2,7 @@
 
 A Claude Code skill for **MiniMax H3**, the open-weight omni-modal video model that generates video *and* native stereo audio in a single pass. Install it once and Claude stops guessing: it picks the right checkpoint, writes prompts in MiniMax's documented rewrite-output structure, and knows why your camera move rendered a physical camera.
 
-Not using Claude Code? The same thing ships as [`portable-prompt.md`](portable-prompt.md) — one block of text you paste into ChatGPT, Grok or anything else.
+Not using Claude Code? The same thing ships as [`portable-prompt.md`](portable-prompt.md) — one block of text you paste into ChatGPT, Grok or anything else. Building a whole reel rather than a single shot? [`reels-portable-prompt.md`](reels-portable-prompt.md) is the same knowledge wrapped in a clip-by-clip pipeline.
 
 Built on MiniMax's own prompt-writing guides, plus the failure modes those guides don't cover.
 
@@ -44,6 +44,12 @@ Open it, copy everything below the horizontal rule, paste, then describe the sho
 
 It folds the framework, the rules, all four mode templates and the symptom→fix table into one document, because a chat model has no way to lazily load `references/` the way Claude Code does. The ComfyUI half is left out — it is irrelevant when you are only writing prompts.
 
+### 3. As a reel pipeline — [`reels-portable-prompt.md`](reels-portable-prompt.md)
+
+Also a pasteable prompt, but pitched a level up. H3 cannot render a whole reel in one pass, so a reel is several clips joined in an editor — this one takes an idea or a reference reel and returns the entire build: shot breakdown, an exact `17k+5` length per clip, the list of reference photos you still have to shoot, one complete prompt per clip, and an edit sheet covering joins, on-screen text and music. Say *"I want a reel about X"* or *"rebuild this reel"* and it answers in those five blocks every time.
+
+Pair it with [`tools/reel_shots.py`](tools/reel_shots.py) when rebuilding an existing reel: run the tool, paste the `manifest.json`, and the beat timings come from measurement instead of memory.
+
 ## What it does
 
 Ask in plain language:
@@ -65,6 +71,7 @@ Ask which model to download and it answers from your actual VRAM, not from a gen
 | `references/comfyui.md` | Claude Code | every checkpoint with sizes, quant explanations, VRAM tiers, node-by-node settings |
 | `references/troubleshooting.md` | Claude Code | symptom → cause → fix |
 | **`portable-prompt.md`** | **any chat model** | **all of the above except ComfyUI, in one pasteable block** |
+| **`reels-portable-prompt.md`** | **any chat model** | **the reel pipeline: breakdown → per-clip lengths → reference shopping list → per-clip prompts → edit sheet** |
 
 ## A taste of what's in there
 
@@ -95,7 +102,7 @@ Verified in the ComfyUI source: 24 fps, a `17k+5` frame grid with a trained rang
 
 ## Requirements
 
-For the skill: [Claude Code](https://claude.com/claude-code). For `portable-prompt.md`: a chat window. Either way this is documentation — no dependencies, no build step, nothing to run.
+For the skill: [Claude Code](https://claude.com/claude-code). For `portable-prompt.md` and `reels-portable-prompt.md`: a chat window. Either way this is documentation — no dependencies, no build step, nothing to run.
 
 ## Sources
 

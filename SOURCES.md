@@ -120,6 +120,10 @@ Not from MiniMax, not from the source — craft rules adopted because they held 
 | A higher-precision encoder improves identity in Ref2VA | Inferred from the architecture, not measured |
 | The ~170° neck-twist explanation for scrambled anatomy | Empirical interpretation of an observed artifact |
 | Reference-video frames outweigh a portrait on identity | Empirical; the earlier "same channel" explanation was wrong and has been removed |
+| Each clip generates its own score, so music drifts at the joins — render multi-clip reels with `non_diegetic_music: N/A` and lay the track in the editor | Empirical, following from the Implementation fact that every render produces audio |
+| Cross-clip continuity: repeat the style opening, time of day and framing verbatim per clip; a locked-off camera hides a join; I2VA from the previous clip's last frame is the only way pixels cross one | Empirical, plus the Implementation fact that I2VA conditions on a real frame |
+| Aspect ratio is a generator setting, not a prompt field — a vertical reel is composed in words, not requested | Implementation (generation width/height are plain, unclamped widgets) |
+| Edit-sheet craft: trim the grid's surplus frames, hard cut by default, cut on motion, titles and transitions in the editor, keep text out of the platform-UI safe area | General video-editing convention, not H3-specific and not verified here |
 
 ## Community, unverified
 

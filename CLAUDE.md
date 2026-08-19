@@ -2,7 +2,7 @@
 
 ## What this is
 
-A **Claude Code skill** (plus a **portable chat prompt**) that teaches prompt-writing
+A **Claude Code skill** (plus two **portable chat prompts**) that teaches prompt-writing
 and ComfyUI setup for **MiniMax H3** — an open-weight, omni-modal video model that
 generates video *and* native stereo audio in one forward pass, at 24 fps, over a trained
 clip length of ~124–362 frames. It ships as two separate checkpoints, `fl2va`
@@ -10,7 +10,27 @@ clip length of ~124–362 frames. It ships as two separate checkpoints, `fl2va`
 own prompt-writing guides, plus the failure modes those guides don't cover.
 
 This repo is documentation. There is nothing to build, run, or test — the "product" is the
-prose in `SKILL.md`, `references/`, and `portable-prompt.md`, and the one script in `tools/`.
+prose in `SKILL.md`, `references/`, `portable-prompt.md` and `reels-portable-prompt.md`,
+and the one script in `tools/`.
+
+## After every edit: hand over the push commands
+
+The git repo with `origin` (`teskor-hub/minimax-h3-skill`) lives **on the PC**, at
+`D:\claude\minimax-h3-skill`. The VPS copy has no remote — nothing can be pushed from
+there. So the last thing every editing session does is:
+
+1. Copy the changed files to the PC over the tunnel
+   (`scp -O -T -i ~/.ssh/vps_to_pc -P 2222 <file> win10@127.0.0.1:'D:\claude\minimax-h3-skill\<file>'`).
+2. **End the reply with a ready-to-paste command block** the user runs on the PC — `cd`,
+   `git add` naming exactly the files that changed, `git commit -m`, `git push`. One block,
+   nothing to edit by hand, no commentary inside it.
+
+   **The shell is Windows PowerShell 5.1, not git-bash.** No `&&`, no trailing `\` line
+   continuations — they are parse errors there. Write one command per line, backslash paths,
+   and let PowerShell run the lines in order. Always include the `cd`, or `git` runs in
+   `C:\Users\win10` and fails with `not a git repository`.
+
+Don't commit or push on the user's behalf; hand over the commands.
 
 ## Where things live
 
@@ -22,20 +42,30 @@ prose in `SKILL.md`, `references/`, and `portable-prompt.md`, and the one script
   is stale.
 - This session's cwd `/workspaces/h3 minimax` is an empty scratch dir, not the project.
 
-## Two deliverables, kept in sync
+## Three deliverables, kept in sync
 
-The same knowledge ships in two shapes:
+The same knowledge ships in three shapes:
 
 1. `SKILL.md` + `references/*.md` + `tools/` — the Claude Code skill (references are
    lazy-loaded only when needed).
 2. `portable-prompt.md` — one self-contained block pasted into any chat model (ChatGPT,
    Grok, Gemini). Same knowledge **minus the ComfyUI half**, because a chat model can't
    lazily load `references/`.
+3. `reels-portable-prompt.md` — the same H3 knowledge wrapped in a **reel pipeline**:
+   shot breakdown → per-clip length → reference shopping list → one prompt per clip →
+   edit sheet. Also chat-model-only, also without ComfyUI. It restates most of
+   `portable-prompt.md`, because a pasted prompt has to stand alone.
 
-**Rule: any factual change to one must be propagated to the other, and to `SOURCES.md`.**
+**Rule: any factual change to one must be propagated to the others, and to `SOURCES.md`.**
 The git log is full of "propagate corrections to every copy" and "close the last copy
-divergences" passes — drift between the skill and the portable prompt is the recurring bug
-here. When you change a claim, grep both surfaces for it.
+divergences" passes — drift between the skill and the portable prompts is the recurring bug
+here. When you change a claim, grep all three surfaces for it.
+
+**Rule: editing `tools/reel_shots.py` means editing `reels-portable-prompt.md` too.** The
+reel prompt tells the chat model what the tool outputs and how to read it — its CLI, its
+flags, `manifest.json`'s field names, `h3_length_options`, the `frames/` naming. Change the
+tool's interface or output shape and that prompt starts describing a script that no longer
+exists. `references/reel-to-prompt.md` documents the same tool and needs the same pass.
 
 ## Provenance discipline — the core working rule
 
@@ -93,6 +123,7 @@ Load-bearing facts the whole skill rests on; see `SKILL.md` for the full treatme
 | `references/troubleshooting.md` | Claude Code | symptom → cause → fix |
 | `references/reel-to-prompt.md` | Claude Code | rebuilding a reference clip into a prompt |
 | `portable-prompt.md` | any chat model | all of the above except ComfyUI, in one block |
+| `reels-portable-prompt.md` | any chat model | the reel pipeline: breakdown → lengths → references → per-clip prompts → edit sheet |
 | `SOURCES.md` | maintainers | provenance ledger for every claim |
 | `tools/reel_shots.py` | run manually | shot detection + frame/length extraction |
 
@@ -109,13 +140,16 @@ Writes `manifest.json` (measured cuts, per-shot start/end/duration, `h3_length_o
 `frames/` (head/mid/tail per shot), and `audio.wav`. **Run it before writing a rebuild
 prompt**, then read the frames — don't describe the clip from memory.
 
+Its interface is described to chat models in `reels-portable-prompt.md` — see the sync rule
+above before changing flags, output paths or `manifest.json` keys.
+
 ## Voice and editing conventions
 
 - Terse, honest, evidence-aware. State which kind of claim (Official/Impl/Empirical/
   Community) you're relying on when it matters.
 - Prefer *correcting* a claim over piling on hedges; **remove** claims found to be wrong —
   the git history does exactly this ("Correct claims the ComfyUI source contradicts").
-- Don't duplicate content beyond what the two-deliverable split forces. One `SOURCES.md`
+- Don't duplicate content beyond what the three-deliverable split forces. One `SOURCES.md`
   row covers a rule and all the places it's restated.
 - When the skill produces a prompt for a user, it emits the **complete** prompt in one code
   block every time, never a fragment or a diff.
