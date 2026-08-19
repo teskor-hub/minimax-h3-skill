@@ -33,6 +33,7 @@ Implementation facts below were read on **2026-08-04** against ComfyUI `master`.
 | One `<Subject N>` may cite several assets, stating what each provides | Official |
 | Doing so reduces reference competition in the rendered output | Empirical — one positive user report (2026-08-04): three assets merged into one subject, identity from two stills and timing from a video containing a different person, with no identity or wardrobe bleed. Single seed, no paired control, so it does not establish that the scoping caused the result |
 | `retention_analysis` markers and `summary` task types | Official |
+| A `retention_analysis` line belongs only to a label that `subject_definitions` gave a role; an image that merely defines a subject is cited inside it and gets no line of its own | Official — restated by the community prompt builder `disprokid/H3-Ref2vid-Prompt-Builder`, which validates label definition/usage and calls a standalone `<Picture N>` carrying identity the most common structural error |
 | Speaker IDs, `<d>` tags, `<scenetrans>`, `<cutoff>`, voiceover phrasing | Official |
 | `detailed_description` runs *normally* 350–500 words for generation tasks, with documented exceptions for dialogue-dense and editing work | Official |
 | Prefer camera motion over a cut when only distance or angle changes | Official |
@@ -122,12 +123,15 @@ Not from MiniMax, not from the source — craft rules adopted because they held 
 | Ordinals mapped to strip panels order a sequence where prose second-counts do not | Empirical, consistent with the documented "the model cannot count" rule |
 | A stated trajectory ("the pencil only rises") holds an order that a list of equal-weight poses does not | Empirical, and an instance of the documented structure-beats-instruction rule |
 | Props and marks named from a contact sheet are unreliable; crop at native resolution before naming them | Arithmetic (panel width) plus one observed misread, 2026-08-19 |
+| Naming the wrong hand against the reference makes the model pass the object between hands mid-clip | Empirical — one observed failure, 2026-08-19 |
+| For a strip-driven rebuild, an elaborated description (stated trajectory, locked hand, panel-by-panel waypoints, named distinguishing details, explicit exclusions) beats a minimal one — same references, same length, same shot | Empirical — one user-reported paired comparison, 2026-08-19; seed control not confirmed, so it is a strong impression rather than a measurement |
 | An omitted `non_diegetic_music` field tends to produce unwanted music | Empirical |
 | Objects absent from the references rarely materialise mid-shot | Empirical |
 | Small distinctive features (a face tattoo, freckles, a scar, a piercing) are dropped unless named in words; naming them by body landmark and restating them in `retention_analysis` is what retains them | Empirical — consistent with the Implementation fact that reference stills enter as vision tokens through the VLM, but the retention benefit itself is not measured |
 | A detail smaller than a few pixels at the shot's scale cannot be retained by any wording | Arithmetic, not a model claim |
 | Cropping heavily foreshortened hands reduces finger artifacts | Empirical |
 | `ref_image_size: max` is never worse for identity | Inferred from the formulas; the slowdown is Implementation |
+| A horizontal strip is sized by its height, so panels must be built at native resolution and the strip run at `max` or the resolution is discarded | Arithmetic from the Implementation formula `min(1, 2048 / min(w, h))` |
 | A higher-precision encoder improves identity in Ref2VA | Inferred from the architecture, not measured |
 | The ~170° neck-twist explanation for scrambled anatomy | Empirical interpretation of an observed artifact |
 | Reference-video frames outweigh a portrait on identity | Empirical; the earlier "same channel" explanation was wrong and has been removed |
@@ -170,4 +174,4 @@ Read from the banodoco Discord, where kijai (author of the KJ nodes and Sol-Attn
 
 ## What is missing
 
-No controlled A/B data exists here for: the scheduler comparison, the sigma-shift defaults, quality deltas between quants, whether 20 steps differ visibly from 30, whether `[video editing]` behaves differently from `[reference generation]` under local inference, or whether writing in MiniMax's documented format measurably beats plain prose given that ComfyUI runs no rewriter. Those would need fixed-seed paired renders. Until someone does that, none of them should be stated as measured.
+No controlled A/B data exists here for: the scheduler comparison, the sigma-shift defaults, quality deltas between quants, whether 20 steps differ visibly from 30, whether `[video editing]` behaves differently from `[reference generation]` under local inference, or whether writing in MiniMax's documented format measurably beats plain prose given that ComfyUI runs no rewriter (a paired minimal-vs-elaborated comparison *within* the format was run once on 2026-08-19 and favoured the elaborated prompt, but that varies detail, not format). Those would need fixed-seed paired renders. Until someone does that, none of them should be stated as measured.

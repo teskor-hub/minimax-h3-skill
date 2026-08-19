@@ -204,6 +204,13 @@ generation`, not `video editing`.
 `partially_preserved`, `attribute_transfer`, `weak_reference`. Audio: `fully_copy`,
 `partially_copy`, `reference`, `weak_reference`.
 
+**One line per label that has a role — no more.** A label earns a `retention_analysis`
+line only because `subject_definitions` gave it a role. An image that merely defines a
+character, a costume or a location was cited inside its `<Subject N>` and has no role of
+its own, so it gets no line: writing `<Picture 2> (appearance only): ...` invents a second,
+competing carrier for the same identity.
+
+
 ## Reference labels — picking the wrong one is the most common structural error
 
 | Label | For |
@@ -293,6 +300,8 @@ always notice when they are gone.
 
 **Identify before you describe — the zoom pass.** A contact sheet resolves pose and trajectory and nothing else; at six panels across an 1800-pixel strip each frame is about 300 px wide. Before naming any object the subject holds or touches, crop it from the full-size frame and look — `ffmpeg -ss T -i src.mp4 -frames:v 1 -vf "crop=W:H:X:Y,scale=2*W:2*H" zoom.png`. A plausible guess is what gets rendered: a hair video makes "comb" plausible when the object is a makeup pencil held up like a plumb line, and the meaning of the gesture goes with it. Zoom on the same pass for marks on the reference actor that must be excluded — tattoos, jewellery, a watch — since you cannot exclude what you never saw. If it is still unidentifiable after zooming, say so and ask; a confident wrong noun becomes a rendered prop.
 
+**Get laterality right, and lock it.** The subject's right hand appears on the viewer's left, so fix the side against a landmark that cannot flip — a tattoo, a watch, a ring — and read every frame against it. State the hand in `<Subject 1>` and again in the trajectory, say it **never changes hands**, and say the other hand stays empty until it is needed. Text naming one hand against a strip showing the other is resolved by the model as a mid-clip hand-off.
+
 ## The three-slot reference convention
 
 The standing wiring for a reel built on an existing clip is three `Load Image` nodes, in
@@ -320,6 +329,41 @@ its person, hair, wardrobe, location or on-screen text appears.
 **Keep the panels large.** An 1800-pixel strip cut into ten frames leaves about 180 pixels
 per pose. Six panels or fewer, or two strips, keeps each pose readable — the same
 resolution arithmetic that makes a character sheet a poor identity source.
+
+## Writing a motion strip into the description
+
+**The elaboration pays for itself here.** In a paired comparison on the same references, the
+same length and the same shot, a minimal doc-style description lost to one carrying the
+stated trajectory, the locked hand, the panel waypoints, the named distinguishing details
+and the explicit exclusions (user-reported, 2026-08-19, one run). So do not economise on
+these sections for a strip-driven rebuild — the length of the description is not the cost
+that matters, the render is.
+
+**Find the through-line first.** A strip of poses is usually one continuous movement sampled
+at intervals, not six independent moments. Say what travels and in which direction — `the
+pencil climbs from her hip to the crown of her head along the centre line of her body, and
+never travels back down` — then write the panels as waypoints on that path. Six equal-weight
+poses can be reassembled in any order, and the model reassembles them into whatever generic
+activity the vocabulary suggests; a stated trajectory cannot be reordered. Naming the one
+travelling element and stating that the rest of the body stays quiet blocks the wrong
+activity by construction rather than by prohibition.
+
+**Enumerate the panels, one sentence each**, in the same left-to-right order the strip
+reads, joined by ordinals — *she begins … next … then … finally*. Prose second-counts (`for
+the first two and a half seconds`, `between five and eight seconds`) schedule nothing: the
+model cannot count, so a timeline written that way arrives as an unordered bag of actions.
+
+**Count your motion words before sending.** Repeated ambient movement outcompetes the point
+of the shot. A description that says bouncing, weight shifting, moving to the beat,
+shoulders rolling and mouthing along to music, and then names the actual subject of the clip
+once at the end, renders as dancing — the model weights what is repeated, not what is
+climactic. Name incidental movement once, in a subordinate clause, and give the key action
+its own sentence in every panel where it appears.
+
+**Size the strip by its short edge.** `ref_image_size: max` scales by `min(1, 2048 / short edge)`, so for a horizontal strip the height is what counts. Build panels at the source's native resolution — six 720 × 990 crops give a 4320 × 990 strip that passes through `max` unresized, at twice the linear detail of the same strip built at half size. A large strip must be run at `max`: under `match` it is scaled back to about a megapixel, which is the small strip again. Neither mode upscales, so a 720-wide source frame never yields a panel wider than 720.
+
+**Crop captions off the strip.** Burned-in text repeated across every panel is the most
+repeated visible content in the whole reference; cutting it is free, forbidding it is not.
 
 ## Camera motion — type + amplitude + speed
 

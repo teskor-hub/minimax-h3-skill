@@ -160,6 +160,8 @@ One line per label, fidelity stated with a fixed marker.
 
 Choose a marker **only within the role already defined for that label**. Newly added actions, backgrounds or plot events in the target video are not losses of reference fidelity.
 
+**One line per label that has a role — no more.** A label earns a line here only because `subject_definitions` gave it one. An image that merely defines a character, a costume or a location was cited inside its `<Subject N>` and has no role of its own, so it gets no line: writing `<Picture 2> (appearance only): ...` invents a second, competing carrier for the same identity. The rule is the mirror image of the picture rule above — where the source lives decides where the fidelity marker lives.
+
 Pick the marker for the fidelity you actually want, not reflexively `weak_reference`: `fully_preserved` when the defined role should be followed completely, `partially_preserved` when only part is retained, `weak_reference` only when broad similarity is the intent. Borrowing an exact camera path is closer to `partially_preserved` than to `weak_reference`.
 
 ## 4. detailed_description

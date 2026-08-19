@@ -330,6 +330,8 @@ strip itself is what gets wired.
 `retention_analysis`, stating that only the poses and their order transfer and that none of
 its person, hair, wardrobe, location or on-screen text appears.
 
+**Size the strip by its short edge.** `ref_image_size: max` scales by `min(1, 2048 / short edge)`, so for a horizontal strip the height is what counts. Build panels at the source's native resolution — six 720 × 990 crops give a 4320 × 990 strip that passes through `max` unresized, at twice the linear detail of the same strip built at half size. A large strip must be run at `max`: under `match` it is scaled back to about a megapixel, which is the small strip again. Neither mode upscales, so a 720-wide source frame never yields a panel wider than 720.
+
 **Keep the panels large.** An 1800-pixel strip cut into ten frames leaves about 180 pixels
 per pose. Six panels or fewer, or two strips, keeps each pose readable — the same
 resolution arithmetic that makes a character sheet a poor identity source.
@@ -366,7 +368,26 @@ right hand, I cannot tell what it is" is a usable line in a report. A confident 
 is not — it survives into `subject_definitions`, gets rendered as a real prop, and costs a
 generation to find out.
 
+**Laterality is part of the zoom pass, and it is the easiest thing to get backwards.**
+On screen the subject's right hand appears on the *viewer's left*, so "the object is on the
+left" is not an answer. Fix the side against a body landmark that cannot flip — a tattoo, a
+watch, a ring, a scar — identify which limb carries it, and read every other frame against
+that. Then state the hand once in `<Subject 1>`, again in the trajectory, and say explicitly
+that it **never changes hands** and that the other hand stays empty until it is needed.
+
+A mismatch here does not degrade quietly. Text saying `right hand` against a strip showing
+the left is a contradiction the model resolves the only way it can — by passing the object
+from one hand to the other mid-clip, which looks like a deliberate and very strange
+gesture. Observed 2026-08-19.
+
 ### Write the strip panel by panel, and count your motion words
+
+**The elaboration pays for itself here.** In a paired comparison on the same references, the
+same length and the same shot, a minimal doc-style description lost to one carrying the
+stated trajectory, the locked hand, the panel waypoints, the named distinguishing details
+and the explicit exclusions (user-reported, 2026-08-19, one run). So do not economise on
+these sections for a strip-driven rebuild — the length of the description is not the cost
+that matters, the render is.
 
 **Find the through-line before you write the panels.** A strip of poses is not six
 independent moments — it is usually one continuous movement sampled at intervals. Say what
@@ -484,6 +505,13 @@ A reference video supplying only camera movement or rhythm is `reference generat
 `retention_analysis` markers — visible content: `fully_preserved`, `partially_preserved`,
 `attribute_transfer`, `weak_reference`. Audio: `fully_copy`, `partially_copy`, `reference`,
 `weak_reference`.
+
+**One line per label that has a role — no more.** A label earns a `retention_analysis`
+line only because `subject_definitions` gave it a role. An image that merely defines a
+character, a costume or a location was cited inside its `<Subject N>` and has no role of
+its own, so it gets no line: writing `<Picture 2> (appearance only): ...` invents a second,
+competing carrier for the same identity.
+
 
 ### Always output the whole prompt
 
