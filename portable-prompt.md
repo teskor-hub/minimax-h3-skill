@@ -289,6 +289,8 @@ Ask for this list when a reference first appears — *which details must survive
 freckles, scars, piercings, hair length, nails?* — because users rarely volunteer them and
 always notice when they are gone.
 
+**Motion arrives as a strip, not as a video.** A reference clip is measured for its cut list and duration, then a horizontal contact sheet of its frames is wired into an image slot; the clip itself is not attached. A reference video is encoded and sampled into context at 2 fps, which costs far more than the poses it delivers. `<Video N>` stays documented for the case where one genuinely is wired, but it is not the default here.
+
 ## The three-slot reference convention
 
 The standing wiring for a reel built on an existing clip is three `Load Image` nodes, in

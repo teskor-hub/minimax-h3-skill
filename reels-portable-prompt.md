@@ -69,8 +69,9 @@ Renders are expensive, so one question up front beats a wasted generation. Ask o
 changes the plan, then get on with it — never open with a questionnaire and nothing else.
 Worth asking:
 
-- **What assets already exist** — photos of the subject and from which angles, any
-  reference video or audio. This drives mode selection for every clip.
+- **What assets already exist** — an identity photo, a look frame, a motion strip, any
+  audio. This drives mode selection for every clip. Ask for the source clip too, even
+  though it will not be wired: it has to be measured.
 - **For each image: frame or reference?** Does the video literally *begin* from this photo
   (`fl2va` family), or does it just define *who appears* (`ref2va`)? This is the most
   consequential fork and the user will rarely say which they mean.
@@ -88,10 +89,15 @@ from a frontal close-up in I2VA, say — state it plainly, propose the mode that
 and carry on. When something is unclear but not load-bearing, choose, note it in block 5,
 and keep moving.
 
-## Step 0 — a reference video decides the shape, before anything else
+## Step 0 — the source clip is measured, not attached
 
-When a reference video is in play, its measurement drives the plan. Work in this order, no
-exceptions:
+**A reference clip is never wired into a video slot.** Motion is supplied as a strip of
+frames in an image slot (see the three-slot convention below): the model reads poses and
+their order from it, and a reference video costs far more — encoding and 2-fps context
+sampling — than it adds. Wire a video only if something specifically demands it.
+
+The clip is still **measured**, though, and that measurement drives the plan. Work in this
+order, no exceptions:
 
 **1. Detect the cuts first.** `tools/reel_shots.py` measures them. If the user has not run
 it, ask them to, or ask outright how many cuts the clip has and where. Never infer a cut
@@ -124,20 +130,22 @@ even segments of roughly 5–7 s cut at natural pauses — and let the user choo
 **4. The ceiling is per render, not per reel: 362 frames, 15.08 s.** Never plan a single
 clip above it. A reel gets longer by having more clips, never by stretching one.
 
-**5. Never take a length from the Step 2 defaults when a motion reference exists.** Those
-defaults are for content that exists only as words. A measured source overrides them every
-time.
+**5. Never take a length from the Step 2 defaults when a source clip has been measured.**
+Those defaults are for content that exists only as words. A measured source overrides them
+every time, whether the motion arrives as a strip or as a video.
 
-**6. Why a short target is not a cheap draft.** A reference video longer than the target is
-**truncated to the target**, then trimmed down to the grid. Ask for 124 frames against a
-14.90-second reference and the model sees only its first 5.17 s — the rest of the
-choreography is not weakened, it is absent. Shortening the length silently changes which
-motion is being copied.
+**6. Why a short target is not a cheap draft.** With a strip, nothing truncates — but the
+written timeline is the only thing carrying pace, so a length below the measured duration
+compresses the whole performance into fast motion rather than trimming its tail. And in the
+case where a video *is* wired, it is **truncated to the target**, then trimmed down to the
+grid: 124 frames against a 14.90-second reference means the model sees only its first
+5.17 s. Either way, shortening the length silently changes the motion being copied.
 
-**7. When a clip covers a segment of the source, cut the reference video to that segment
-before wiring it.** Truncation always keeps the head, so clip 2 handed the whole file would
-copy clip 1's motion. Say this in the shopping list: which trimmed segment goes with which
-clip.
+**7. When several clips cover segments of one source, build one strip per segment.** Each
+clip gets a strip of only its own frames, in order — a single whole-clip strip makes every
+render chase the same opening poses. Say in the shopping list which strip belongs to which
+clip. If a video is wired instead, cut the file to that segment first: truncation always
+keeps the head.
 
 ## Copying a reference's motion — write the timeline, not a summary
 
@@ -199,9 +207,10 @@ not an edit.
 
 ## Step 2 — length per clip
 
-**A measured reference video wins over everything in this section.** If Step 0 produced a
-source duration, the length is the smallest `17k+5` value at or above it, capped at 362. The
-defaults below apply only to clips whose content exists only as words.
+**A measured source clip wins over everything in this section.** If Step 0 produced a source
+duration, the length is the smallest `17k+5` value at or above it, capped at 362 — regardless
+of whether its motion arrives as a strip or as a video. The defaults below apply only to
+clips whose content exists only as words.
 
 **Commit to one exact length per clip. Never give a range.** This is an automated pipeline —
 the user pastes a number, they do not weigh options. Forbidden: `about 3–4 seconds`,

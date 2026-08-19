@@ -116,6 +116,7 @@ Not from MiniMax, not from the source — craft rules adopted because they held 
 | Frame defaults 124 / 158 / 192 / 209 / 243+ per shot type | Empirical |
 | One primary camera move per shot | Empirical |
 | The three-slot convention — identity photo, look frame, motion strip — as the standing wiring for a clip rebuild | Convention adopted in this project, not from MiniMax |
+| A reference video is not wired at all; its cost outweighs what a motion strip already delivers | User report (2026-08-19), uncontrolled; the encode-and-2-fps-context cost itself is Implementation |
 | A motion strip transfers poses and their order but no timing | Follows from it being a still image; the label order itself is Implementation |
 | An omitted `non_diegetic_music` field tends to produce unwanted music | Empirical |
 | Objects absent from the references rarely materialise mid-shot | Empirical |
