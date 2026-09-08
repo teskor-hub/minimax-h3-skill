@@ -4,6 +4,14 @@ Source: MiniMax's `VIDEO_PROMPT_WRITING_GUIDE_ref_en.md`. Runs on the `ref2va` c
 
 Shots, camera motion, speakers, dialogue and ordinary sound follow `prompting.md`. This file covers what is specific to reference mode: the labels, the analysis sections, and the format differences.
 
+## Reel preparation workflows
+
+For a source-reel rebuild, first read [reel-modes.md](reel-modes.md). ControlNet and
+Motion Strip select how motion is supplied; both retain this Ref2VA prompt format.
+ControlNet's default face/body images define one subject and do not supply a composition
+anchor or a `<Video 1>`. Motion Strip uses the identity/look/strip convention.
+Inspect existing user-assigned slots before applying either default.
+
 ## Structure
 
 | Section | Purpose |
@@ -190,6 +198,14 @@ Frame anchors read naturally: `the shot begins from <Picture 1>` · `the shot's 
 Make it genuinely detailed: composition, subject appearance and position, environment and lighting, actions and state changes, camera movement, current sound, and where referenced content actually takes effect. **Do not reduce it to a plot summary or a list of reference relationships.**
 
 ### Speakers with references
+
+For source reels in either workflow, inspect audio and include actual dialogue
+automatically. Keep a timestamped transcript and on-screen/offscreen attribution.
+The first audible voice receives `(S1)`, even when the visible referenced subject
+speaks second. Subject numbers do not decide speaker order. Flag uncertain words and
+ASR-only verification; do not turn music lyrics into invented conversation.
+Run `python tools/check_prompt_dialogue.py <prompt-file>` before delivery; the check
+validates numbering/tags, not whether the source was heard or transcribed correctly.
 
 When a referenced subject speaks, keep both labels:
 

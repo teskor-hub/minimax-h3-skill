@@ -54,6 +54,13 @@ non_diegetic_music: <...> — or N/A.
 
 ## Full-reference (Ref2VA)
 
+This is a generic example for a graph with an actual Ref2VA video-reference input,
+not the slot map for a Reel Maker rebuild. For ControlNet or Motion Strip first use
+[reel-modes.md](reel-modes.md): neither creates `<Video 1>` automatically. Rewrite the
+subject, summary and retention roles to match the connected assets; do not paste the
+video labels below into a graph without that input. Preserve the selected mode's
+per-video description and automatic dialogue requirements.
+
 ```
 subject_definitions:
 <Subject 1> is the <PERSON> whose appearance comes from <Picture 1> — <face, hair, distinguishing marks, wardrobe> — and whose <motion / pose / action> comes from <Video 1>.

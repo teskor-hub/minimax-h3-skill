@@ -15,11 +15,42 @@ This skill follows MiniMax's own prompt-writing guides and adds the failure mode
 - `references/troubleshooting.md` — symptom → cause → fix, from real failures
 - `references/comfyui.md` — checkpoints, quants, VRAM, node-by-node settings
 - `references/reel-to-prompt.md` — rebuilding a reference clip: measure its cuts, read its frames, write the prompt from what is there
+- `references/reel-modes.md` — ControlNet / Motion Strip selection, source dialogue and mode-specific readiness
 
 
 **When the user supplies a reference clip or a link to one**, do not describe it from memory. Run `tools/reel_shots.py` first — it downloads the clip, detects every cut, writes frames at each shot's head, middle and tail, and lists the valid `17k+5` lengths bracketing the source duration. Then read those frames. Beat timings taken from a measured cut list are the difference between a rebuild that feels right and one that floats, because H3 reads beat duration literally as event speed. Also report **which shots need which reference photos** — front, three-quarter, back, close-up — since that list is what the user has to supply and cannot guess.
 
 ## 0. Before writing a prompt
+
+**For a reel rebuild, choose the Reel Maker workflow first.** Honour an explicit
+`ControlNet` / `controlnet` / `контролнет` or `Motion Strip` / `motion_strip` /
+`моушен стрип` choice. Otherwise ask which of the two the user wants before preparing
+mode-specific assets; a source video alone does not choose a mode. Retain the choice for
+that reel's follow-ups. Record `reel_mode: controlnet` or `reel_mode: motion_strip`
+outside the pasteable prompt, then read `references/reel-modes.md`. These are preparation
+workflows within Ref2VA, not additional H3 checkpoint modes. Do not silently combine
+them, switch modes, install missing dependencies or add a third reference.
+
+**Require a description for each source video.** First read any attached text or matching
+sidecar (`source.txt`, `description.txt`, `описание видео*.txt`, or a clearly mapped
+message). If it already explains that video's intended meaning, do not ask again.
+Otherwise ask for a short description for that specific video before writing its final
+prompt: what happens, why the moment matters, required details and intended changes.
+For several videos, request a filename/ID-to-description mapping; do not reuse one
+description for unrelated clips. Source inspection may continue meanwhile. Treat this
+description as guidance for intent and emphasis, and the footage as evidence of visible/
+audible facts. Resolve material contradictions explicitly instead of ignoring the text
+or turning an interpretation into an observed fact. If the user explicitly declines a
+description and asks to proceed from the video alone, honour that choice and record
+the limitation.
+
+**Inspect the soundtrack for every source reel in either workflow.** When speech exists,
+extract a timestamped transcript and include the actual dialogue in the complete H3
+prompt automatically; no separate transcription request is needed. Identify who speaks
+in-frame and offscreen, preserve the original words/language, and distinguish music lyrics
+from conversation. Mark unclear words and verification limits rather than guessing or
+claiming listening that did not occur. The source descriptions, wardrobe, scene, props
+and relevant facial performance must be checked against the footage in both modes.
 
 H3 prompts are long and expensive to iterate, and the wrong mode wastes the whole render. Ask rather than guess when any of these is unclear — one question up front is cheaper than a bad eight-second generation:
 
@@ -38,6 +69,11 @@ State a recommendation rather than only listing options, and say plainly when a 
 The seconds are **derived, not chosen**: frames ÷ 24, to two decimals. Do not round them to a tidier number — 90 frames is 3.75 s, never "about 3.8" and never "3.5". When two grid values are both defensible, pick one, state it, and give the reason in a clause; do not hand the choice back.
 
 **Always state a recommended `length` when the user has not given one.** Put it after the prompt block, as frames and seconds — `length 192 (8.00 s)`. Derive it rather than guessing: budget each beat its *real-world* duration, add a second of settle at the end, then round **up** to the nearest `17k+5` value. Duration is read literally as event speed, so an over-long clip does not give the model room — it gives you slow motion. The table in `references/prompting.md` lists realistic durations for common events; the short version is 124 for a single action on a static camera, 158 with one camera move, 192 for an entrance or approach, 209 for action → reaction → settle, and 243+ once there are cuts. For dialogue, count words at roughly 2.7 per second. Mention the cost when it matters: frames drive VRAM and render time directly, and past 362 the model is out of distribution.
+
+**For ControlNet, resolve frame alignment before applying the duration defaults below.**
+The maps and target must contain the same actual frame count; upward rounding does not
+create control frames. Follow `references/reel-modes.md` for a selected crop or agreed
+extension policy and preserve the user's choice.
 
 **A measured reference video sets the length, overriding the defaults above.** Its duration, rounded **up** to the nearest `17k+5` value and capped at 362 frames (15.08 s), is the length — because a reference video longer than the target is truncated to the target. A 14.90-second motion reference asked for at 124 frames delivers only its first 5.17 s of choreography; the remainder is absent, not compressed. Detect the cuts before choosing anything: with no cuts and a source inside 15.08 s it is one clip at the bracketing grid value; with cuts, ask whether the user wants one render per cut or a single full pass (possible only under 15.08 s total); past 15.08 s, one render cannot hold the take, so ask whether to split it into consecutive segments or keep one section. When clips cover segments of one source, trim the reference video to each segment before wiring it — truncation keeps the head, so an untrimmed file makes every clip copy the opening. And when the job is to reproduce a reference's choreography, write the description as a beat every one to two seconds across the whole length; a summary like "a few quick adjustments" leaves the model to invent the rest, and explicit text outweighs a video reference.
 
@@ -96,6 +132,13 @@ non_diegetic_music:    audience-only score, or N/A
 
 Shots: `[Shot 1]` carries **no timestamp**. Later shots open with a strictly increasing cut time — `[Shot 2] At 00:03.500, the camera cuts to …`. Open `[Shot 1]` with the style: `[Shot 1] Live-action, cinematic, a medium-wide shot frames …`
 
+**Number dialogue speakers by first actual vocal event.** The first voice is `(S1)`,
+even offscreen; each later new voice receives the next number. Subject IDs do not decide
+speaker IDs. In `detailed_description`, write speaker, visibility and delivery outside
+`<d>[Language] exact spoken words.</d>`. Keep speaker IDs out of `retention_analysis`.
+Run `python tools/check_prompt_dialogue.py <prompt-file>` for a file-backed dialogue
+prompt; it checks formatting/numbering, not transcription accuracy.
+
 ## 3. Reference labels
 
 Four labels, and picking the wrong one is the most common structural mistake.
@@ -118,9 +161,17 @@ motion comes from <Video 1>.
 
 That single line is the official answer to "take the motion from the video and the face from the photo". You do not forbid the video from contributing a face — you define one subject and state what each source supplies. Anything reused as *visible content* from a video belongs to `<Subject N>`; `<Video N>` only names the asset or its structure.
 
-**Motion arrives as a strip, not as a video.** A reference clip is measured for its cut list and duration, then a horizontal contact sheet of its frames is wired into an image slot; the clip itself is not attached. A reference video is encoded and sampled into context at 2 fps, which costs far more than the poses it delivers. `<Video N>` stays documented for the case where one genuinely is wired, but it is not the default here.
+**Motion follows the selected reel workflow.** In **ControlNet**, the source supplies
+aligned pose/depth IMAGE batches to H3 ControlNet Apply, separately from the Ref2VA
+image references. The default image inputs are `<Picture 1>` face and `<Picture 2>` body;
+there is no required strip, composition keyframe or `<Picture 3>`. Describe wardrobe,
+scene, props, complete motion and facial acting explicitly. A control map is not a
+Ref2VA `<Video N>`; see `references/reel-modes.md` for compatibility and alignment.
+In **Motion Strip**, selected source frames become a chronological image reference;
+that mode needs no ControlNet weights or preprocessors. Use a `<Video N>` label only
+when a clip actually occupies a Ref2VA video slot.
 
-**The three-slot reference convention.** The standing wiring for rebuilding a clip is three `Load Image` nodes: `<Picture 1>` the identity photo (passport-style — frontal, evenly lit, plain background, face large), `<Picture 2>` the look frame (a composed still of the subject as she appears in *this* video: wardrobe, hair, location, framing), `<Picture 3>` the motion strip (a horizontal contact sheet of the reference clip's frames, chronological left to right). Labels follow slot index, and **no `<Video N>` exists unless a clip is wired into a video slot** — writing one then points at a label that is not in context. Cite `<Picture 1>` inside `<Subject 1>`; cite `<Picture 2>` for wardrobe and location and give it its own entry as the composition anchor; cite `<Picture 3>` inside a subject that defines the action progression, scoped `weak_reference`. A strip carries poses and their order but **no timing at all**, so the written timeline is the only thing setting pace — take its numbers from a measurement of the source clip anyway. Keep the strip to six panels or fewer; at ten panels an 1800-pixel strip leaves ~180 px per pose.
+**The three-slot reference convention (Motion Strip only).** This workflow's default is three `Load Image` nodes: `<Picture 1>` the identity photo (passport-style — frontal, evenly lit, plain background, face large), `<Picture 2>` the look frame (a composed still of the subject as she appears in *this* video: wardrobe, hair, location, framing), `<Picture 3>` the motion strip (a horizontal contact sheet of the reference clip's frames, chronological left to right). Labels follow slot index, and **no `<Video N>` exists unless a clip is wired into a video slot** — writing one then points at a label that is not in context. Cite `<Picture 1>` inside `<Subject 1>`; cite `<Picture 2>` for wardrobe and location and give it its own entry as the composition anchor; cite `<Picture 3>` inside a subject that defines the action progression, scoped `weak_reference`. A strip carries poses and their order but **no timing at all**, so the written timeline is the only thing setting pace — take its numbers from a measurement of the source clip anyway. Choose enough distinct, readable phase panels for the action; at ten panels an 1800-pixel strip leaves ~180 px per pose.
 
 **Identify before you describe — the zoom pass.** A contact sheet resolves pose and trajectory and nothing else; at six panels across an 1800-pixel strip each frame is about 300 px wide. Before naming any object the subject holds or touches, crop it from the full-size frame and look — `ffmpeg -ss T -i src.mp4 -frames:v 1 -vf "crop=W:H:X:Y,scale=2*W:2*H" zoom.png`. A plausible guess is what gets rendered: a hair video makes "comb" plausible when the object is a makeup pencil held up like a plumb line, and the meaning of the gesture goes with it. Zoom on the same pass for marks on the reference actor that must be excluded — tattoos, jewellery, a watch — since you cannot exclude what you never saw. If it is still unidentifiable after zooming, say so and ask; a confident wrong noun becomes a rendered prop.
 
@@ -153,7 +204,11 @@ These are empirical — none of them appear in MiniMax's guides.
 
 This is not "never exclude anything" — it is about **where the exclusion lives**. A fidelity marker is a fixed value in MiniMax's documented format, which is a stronger convention than an ad-hoc sentence; but ComfyUI parses nothing, so it arrives as ordinary prompt tokens either way. That scoping there beats the same words in the body is **empirical**, not mechanical. What is solid is the general observation: a ban is text competing against a data signal, and the data usually wins.
 
-**There is no negative prompt.** The ComfyUI template uses `BasicGuider` — one conditioning input, CFG effectively 1, no negative socket. State the desired condition positively instead. Do not reach for `CFGGuider` casually: it doubles inference time, and how H3 was trained with respect to guidance is not established by any source here.
+**The stock BasicGuider template has no negative prompt.** It uses one conditioning input,
+CFG effectively 1. Prefer positive descriptions of the desired state. A custom ControlNet
+workflow may use a different guider with negative conditioning: inspect its actual graph
+instead of asserting that all H3 workflows lack that input. Changing the guider is a
+separate tuning decision; do not silently replace the user's working configuration.
 
 **The model cannot count, and bans amplify what they ban.** `exactly one shot` is a token sequence, not a constraint, and `no second shot` puts *second shot* into the conditioning with no negative channel to subtract it. Name an event once, in one shot, with no prohibition attached, then block repetition through scene state.
 

@@ -92,7 +92,7 @@ Statements the skill makes in its own voice, which a reader could otherwise mist
 | `fl2va` and `ref2va` are separate weights, and the mode → checkpoint mapping | Implementation (file names, stock templates) |
 | Frame count drives VRAM and render time | Implementation (latent dimensions scale with it) |
 | Reference audio cannot carry meaning through the prompt path | Implementation — only its label reaches the encoder |
-| A negative list such as `no extra fingers` is ignored | Implementation (no negative socket) plus Empirical for the phrasing advice |
+| A separate negative list has no negative socket in the stock BasicGuider path; inspect custom guiders separately | Implementation (stock template); the upstream ControlNet reference example uses CFG instead |
 | "Value in the picture versus who is in it" as the mode-selection rule | Editorial framing, not from any source |
 | Forcing an unseen viewpoint through I2VA collapses identity | Empirical |
 | H3 gives recognisable likeness rather than face-swap identity | Empirical |
@@ -116,8 +116,9 @@ Not from MiniMax, not from the source — craft rules adopted because they held 
 | An explicit written timeline outweighs a motion reference, so a summarised description makes the model invent its own choreography | Empirical |
 | Frame defaults 124 / 158 / 192 / 209 / 243+ per shot type | Empirical |
 | One primary camera move per shot | Empirical |
-| The three-slot convention — identity photo, look frame, motion strip — as the standing wiring for a clip rebuild | Convention adopted in this project, not from MiniMax |
-| A reference video is not wired at all; its cost outweighs what a motion strip already delivers | User report (2026-08-19), uncontrolled; the encode-and-2-fps-context cost itself is Implementation |
+| User-selectable `controlnet` and `motion_strip` workflows; ask when unspecified and retain the choice for that reel | Project convention requested 2026-09-08, not a MiniMax checkpoint mode or quality claim |
+| ControlNet defaults to face/body images; Motion Strip defaults to identity/look/strip; honour explicit slot maps and do not combine modes silently | Project convention; the three-slot map applies only to Motion Strip |
+| In Motion Strip mode the reference video is not wired by default; its cost outweighing the strip's contribution is a user report, not a rule for ControlNet | User report (2026-08-19), uncontrolled; the encode-and-2-fps-context cost itself is Implementation |
 | A motion strip transfers poses and their order but no timing | Follows from it being a still image; the label order itself is Implementation |
 | Repeated ambient-motion vocabulary outweighs a key action named once, and the render performs the repeated activity | Empirical — one observed failure (2026-08-19), uncontrolled |
 | Ordinals mapped to strip panels order a sequence where prose second-counts do not | Empirical, consistent with the documented "the model cannot count" rule |
@@ -139,6 +140,24 @@ Not from MiniMax, not from the source — craft rules adopted because they held 
 | Cross-clip continuity: repeat the style opening, time of day and framing verbatim per clip; a locked-off camera hides a join; I2VA from the previous clip's last frame is the only way pixels cross one | Empirical, plus the Implementation fact that I2VA conditions on a real frame |
 | Aspect ratio is a generator setting, not a prompt field — a vertical reel is composed in words, not requested | Implementation (generation width/height are plain, unclamped widgets) |
 | Edit-sheet craft: trim the grid's surplus frames, hard cut by default, cut on motion, titles and transitions in the editor, keep text out of the platform-UI safe area | General video-editing convention, not H3-specific and not verified here |
+
+## Reel Maker workflow additions — checked 2026-09-08
+
+Implementation links below refer to the third-party H3-FunControl extension, not ComfyUI
+core or an official MiniMax guarantee. Inspected revision:
+[`22a7ec38c4d16a76a8dea53b6e0faa0356f4f220`](https://github.com/wyzborrero/ComfyUI-H3-FunControl/tree/22a7ec38c4d16a76a8dea53b6e0faa0356f4f220).
+
+| Claim | Type / source |
+|---|---|
+| Ask for a per-video description (file or text) when absent; use an existing mapped description, resolve material discrepancies, honour an explicit request to proceed without one | Project workflow requirement, requested 2026-09-08; not a model capability claim |
+| Both reel modes inspect audio automatically and put actual source dialogue in the prompt, with timestamps/speaker attribution outside it and unclear words flagged | Project workflow requirement, requested 2026-09-08; dialogue syntax and first-audible speaker numbering follow the official reference guide |
+| Body/hand/face map inspection, preserving the selected skeleton during optional smoothing, detailed wardrobe/scene/acting and separate mode readiness | Production checks, not a guarantee of expression or motion transfer; DWPose as a starting extractor is a project convention, not an accuracy ranking |
+| Loader uses models/controlnet, requires curve-form AdaLN; Apply takes rendered IMAGE batches + H3 video VAE and patches MODEL, not conditioning | Implementation — [nodes.py](https://github.com/wyzborrero/ComfyUI-H3-FunControl/blob/22a7ec38c4d16a76a8dea53b6e0faa0356f4f220/nodes.py) |
+| Control maps must match target length/width/height; they do not create text-encoder reference labels | Implementation — Apply's token-count check and model patch; combined with the existing ComfyUI reference-label schema |
+| Each strength accepts 0–2; chained skips add; start/end gate the denoising sigma interval; no code rule forbids 0.5/0.5 or requires a sum of 1 | Implementation — same nodes.py, INPUT_TYPES, in_window, make_hook |
+| Depth 0.3 + pose 0.7 is an upstream example; saturation and early-release observations are shot-specific; Ref2VA is not the reported trained base pairing | Upstream empirical reports, not independently GPU-verified here — [README](https://github.com/wyzborrero/ComfyUI-H3-FunControl/blob/22a7ec38c4d16a76a8dea53b6e0faa0356f4f220/README.md) and [reference example](https://github.com/wyzborrero/ComfyUI-H3-FunControl/blob/22a7ec38c4d16a76a8dea53b6e0faa0356f4f220/workflows/02_depth_plus_pose_reference.json) |
+| Explicitly resolve crop/extension when valid target count lacks control frames; same source transform for both branches | Alignment requirement plus project policy against silently changing source timing |
+| Aspect-preserving strip panels, 990 px default height and enough distinct readable phase anchors | Image geometry and project convention, not a MiniMax-required height or fixed panel count |
 
 ## Community, unverified
 
