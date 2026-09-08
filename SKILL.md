@@ -15,7 +15,7 @@ This skill follows MiniMax's own prompt-writing guides and adds the failure mode
 - `references/troubleshooting.md` — symptom → cause → fix, from real failures
 - `references/comfyui.md` — checkpoints, quants, VRAM, node-by-node settings
 - `references/reel-to-prompt.md` — rebuilding a reference clip: measure its cuts, read its frames, write the prompt from what is there
-- `references/reel-modes.md` — ControlNet / Motion Strip selection, source dialogue and mode-specific readiness
+- `references/reel-modes.md` — ControlNet / Motion Strip / Hybrid selection, source dialogue and mode-specific readiness
 
 
 **When the user supplies a reference clip or a link to one**, do not describe it from memory. Run `tools/reel_shots.py` first — it downloads the clip, detects every cut, writes frames at each shot's head, middle and tail, and lists the valid `17k+5` lengths bracketing the source duration. Then read those frames. Beat timings taken from a measured cut list are the difference between a rebuild that feels right and one that floats, because H3 reads beat duration literally as event speed. Also report **which shots need which reference photos** — front, three-quarter, back, close-up — since that list is what the user has to supply and cannot guess.
@@ -23,13 +23,16 @@ This skill follows MiniMax's own prompt-writing guides and adds the failure mode
 ## 0. Before writing a prompt
 
 **For a reel rebuild, choose the Reel Maker workflow first.** Honour an explicit
-`ControlNet` / `controlnet` / `контролнет` or `Motion Strip` / `motion_strip` /
-`моушен стрип` choice. Otherwise ask which of the two the user wants before preparing
+`ControlNet` / `controlnet` / `контролнет`, `Motion Strip` / `motion_strip` /
+`моушен стрип`, or `Hybrid` / `hybrid` / `mix` / `микс` / `гибрид` choice. An explicit
+request to combine pose/depth controls and a motion strip selects `hybrid` directly.
+Otherwise ask which of the three the user wants before preparing
 mode-specific assets; a source video alone does not choose a mode. Retain the choice for
-that reel's follow-ups. Record `reel_mode: controlnet` or `reel_mode: motion_strip`
+that reel's follow-ups. Record `reel_mode: controlnet`, `reel_mode: motion_strip` or
+`reel_mode: hybrid`
 outside the pasteable prompt, then read `references/reel-modes.md`. These are preparation
-workflows within Ref2VA, not additional H3 checkpoint modes. Do not silently combine
-them, switch modes, install missing dependencies or add a third reference.
+workflows within Ref2VA, not additional H3 checkpoint modes. Do not silently switch modes,
+install missing dependencies or add an optional look reference.
 
 **Require a description for each source video.** First read any attached text or matching
 sidecar (`source.txt`, `description.txt`, `описание видео*.txt`, or a clearly mapped
@@ -44,13 +47,13 @@ or turning an interpretation into an observed fact. If the user explicitly decli
 description and asks to proceed from the video alone, honour that choice and record
 the limitation.
 
-**Inspect the soundtrack for every source reel in either workflow.** When speech exists,
+**Inspect the soundtrack for every source reel in every workflow.** When speech exists,
 extract a timestamped transcript and include the actual dialogue in the complete H3
 prompt automatically; no separate transcription request is needed. Identify who speaks
 in-frame and offscreen, preserve the original words/language, and distinguish music lyrics
 from conversation. Mark unclear words and verification limits rather than guessing or
 claiming listening that did not occur. The source descriptions, wardrobe, scene, props
-and relevant facial performance must be checked against the footage in both modes.
+and relevant facial performance must be checked against the footage in every mode.
 
 H3 prompts are long and expensive to iterate, and the wrong mode wastes the whole render. Ask rather than guess when any of these is unclear — one question up front is cheaper than a bad eight-second generation:
 
@@ -70,10 +73,12 @@ The seconds are **derived, not chosen**: frames ÷ 24, to two decimals. Do not r
 
 **Always state a recommended `length` when the user has not given one.** Put it after the prompt block, as frames and seconds — `length 192 (8.00 s)`. Derive it rather than guessing: budget each beat its *real-world* duration, add a second of settle at the end, then round **up** to the nearest `17k+5` value. Duration is read literally as event speed, so an over-long clip does not give the model room — it gives you slow motion. The table in `references/prompting.md` lists realistic durations for common events; the short version is 124 for a single action on a static camera, 158 with one camera move, 192 for an entrance or approach, 209 for action → reaction → settle, and 243+ once there are cuts. For dialogue, count words at roughly 2.7 per second. Mention the cost when it matters: frames drive VRAM and render time directly, and past 362 the model is out of distribution.
 
-**For ControlNet, resolve frame alignment before applying the duration defaults below.**
-The maps and target must contain the same actual frame count; upward rounding does not
-create control frames. Follow `references/reel-modes.md` for a selected crop or agreed
-extension policy and preserve the user's choice.
+**For ControlNet or Hybrid, resolve frame alignment before applying the duration defaults
+below.** The maps and target must contain the same actual frame count; upward rounding does
+not create control frames. In Hybrid, build the strip from separate phases of that same
+selected interval and use its FPS, crop and target count for both controls. Follow
+`references/reel-modes.md` for a selected crop or agreed extension policy and preserve the
+user's choice.
 
 **A measured reference video sets the length, overriding the defaults above.** Its duration, rounded **up** to the nearest `17k+5` value and capped at 362 frames (15.08 s), is the length — because a reference video longer than the target is truncated to the target. A 14.90-second motion reference asked for at 124 frames delivers only its first 5.17 s of choreography; the remainder is absent, not compressed. Detect the cuts before choosing anything: with no cuts and a source inside 15.08 s it is one clip at the bracketing grid value; with cuts, ask whether the user wants one render per cut or a single full pass (possible only under 15.08 s total); past 15.08 s, one render cannot hold the take, so ask whether to split it into consecutive segments or keep one section. When clips cover segments of one source, trim the reference video to each segment before wiring it — truncation keeps the head, so an untrimmed file makes every clip copy the opening. And when the job is to reproduce a reference's choreography, write the description as a beat every one to two seconds across the whole length; a summary like "a few quick adjustments" leaves the model to invent the rest, and explicit text outweighs a video reference.
 
@@ -170,6 +175,15 @@ Ref2VA `<Video N>`; see `references/reel-modes.md` for compatibility and alignme
 In **Motion Strip**, selected source frames become a chronological image reference;
 that mode needs no ControlNet weights or preprocessors. Use a `<Video N>` label only
 when a clip actually occupies a Ref2VA video slot.
+
+In **Hybrid**, ControlNet pose/depth maps patch the same Ref2VA `ref2va` MODEL branch,
+while the motion strip is ordinary Ref2VA image conditioning. Its default images are
+`<Picture 1>` face/identity, `<Picture 2>` body
+proportions and `<Picture 3>` motion strip; `<Picture 4>` is an optional explicitly chosen
+look/composition frame. This is not a new checkpoint, an automatic `<Video 1>`, or a claim
+of better quality. The maps control the complete selected sequence; the strip supplies
+separate chronological phases of that same interval, while the written timeline controls
+pace rather than strip panel count.
 
 **The three-slot reference convention (Motion Strip only).** This workflow's default is three `Load Image` nodes: `<Picture 1>` the identity photo (passport-style — frontal, evenly lit, plain background, face large), `<Picture 2>` the look frame (a composed still of the subject as she appears in *this* video: wardrobe, hair, location, framing), `<Picture 3>` the motion strip (a horizontal contact sheet of the reference clip's frames, chronological left to right). Labels follow slot index, and **no `<Video N>` exists unless a clip is wired into a video slot** — writing one then points at a label that is not in context. Cite `<Picture 1>` inside `<Subject 1>`; cite `<Picture 2>` for wardrobe and location and give it its own entry as the composition anchor; cite `<Picture 3>` inside a subject that defines the action progression, scoped `weak_reference`. A strip carries poses and their order but **no timing at all**, so the written timeline is the only thing setting pace — take its numbers from a measurement of the source clip anyway. Choose enough distinct, readable phase panels for the action; at ten panels an 1800-pixel strip leaves ~180 px per pose.
 

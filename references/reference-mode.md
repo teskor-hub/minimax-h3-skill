@@ -6,11 +6,13 @@ Shots, camera motion, speakers, dialogue and ordinary sound follow `prompting.md
 
 ## Reel preparation workflows
 
-For a source-reel rebuild, first read [reel-modes.md](reel-modes.md). ControlNet and
-Motion Strip select how motion is supplied; both retain this Ref2VA prompt format.
+For a source-reel rebuild, first read [reel-modes.md](reel-modes.md). ControlNet, Motion
+Strip and Hybrid select how motion is supplied; all retain this Ref2VA prompt format.
 ControlNet's default face/body images define one subject and do not supply a composition
-anchor or a `<Video 1>`. Motion Strip uses the identity/look/strip convention.
-Inspect existing user-assigned slots before applying either default.
+anchor or a `<Video 1>`. Motion Strip uses the identity/look/strip convention. Hybrid
+defaults to face/body/strip, with a look image only when explicitly selected; neither
+control maps nor strips create `<Video 1>`. Inspect existing user-assigned slots before
+applying any default.
 
 ## Structure
 
@@ -199,7 +201,7 @@ Make it genuinely detailed: composition, subject appearance and position, enviro
 
 ### Speakers with references
 
-For source reels in either workflow, inspect audio and include actual dialogue
+For source reels in every workflow, inspect audio and include actual dialogue
 automatically. Keep a timestamped transcript and on-screen/offscreen attribution.
 The first audible voice receives `(S1)`, even when the visible referenced subject
 speaks second. Subject numbers do not decide speaker order. Flag uncertain words and

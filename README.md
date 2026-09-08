@@ -42,7 +42,7 @@ That's it — no configuration. It triggers on `MiniMax H3`, `fl2va`, `ref2va`, 
 
 Open it, copy everything below the horizontal rule, paste, then describe the shot you want in plain language.
 
-It folds the framework, the rules, all four mode templates and the symptom→fix table into one document, because a chat model has no way to lazily load `references/` the way Claude Code does. Full installation and quant/VRAM tables are left out. Minimal ControlNet/Motion Strip input roles and alignment rules are included so the prompt can choose the right workflow.
+It folds the framework, the rules, all four mode templates and the symptom→fix table into one document, because a chat model has no way to lazily load `references/` the way Claude Code does. Full installation and quant/VRAM tables are left out. Minimal ControlNet/Motion Strip/Hybrid input roles and alignment rules are included so the prompt can choose the right workflow.
 
 ### 3. As a reel pipeline — [`reels-portable-prompt.md`](reels-portable-prompt.md)
 
@@ -52,20 +52,24 @@ Pair it with [`tools/reel_shots.py`](tools/reel_shots.py) when rebuilding an exi
 
 ## Choose your Reel Maker workflow
 
-When rebuilding a source reel, choose **ControlNet** or **Motion Strip**. If you do not
-specify one, the skill asks before preparing mode-specific inputs. It remembers the choice
-for that reel's follow-ups; these are two workflows using Ref2VA, not new model checkpoints.
+When rebuilding a source reel, choose **ControlNet**, **Motion Strip** or **Hybrid**. If you
+do not specify one, the skill asks before preparing mode-specific inputs. An explicit request
+to combine pose/depth controls with a strip selects Hybrid directly. It remembers the choice
+for that reel's follow-ups; these are three workflows using Ref2VA, not new model checkpoints.
 
 | Workflow | What you supply | What it needs |
 |---|---|---|
 | **ControlNet** | Source video + face reference + body reference | H3-compatible ControlNet and pose/depth preprocessors; aligned maps drive the model separately from the two images |
 | **Motion Strip** | Source video + face reference + target look/composition frame | A chronological image strip built from the source; no ControlNet download or pose/depth estimation |
+| **Hybrid** | Source video + face reference + body reference + motion strip | The same source interval drives both the ControlNet pose/depth maps and the strip; an optional look image is added only when explicitly selected |
 
 Examples:
 
 > Rebuild this reel in ControlNet mode. Picture 1 is my face reference, Picture 2 is my body reference.
 
 > Rebuild this reel in Motion Strip mode with an identity photo, target look frame and motion strip.
+
+> Rebuild this reel in Hybrid mode with face, body and motion-strip references.
 
 > Переделай этот рилс: режим ControlNet, только фейс и боди реф.
 
@@ -75,11 +79,11 @@ first and asks only when it is missing, identifying the relevant filename/reel. 
 not silently ignore the description or invent its meaning; an explicit request to proceed
 without one is honoured and noted.
 
-**Both workflows inspect the source's descriptions, frames and soundtrack.** If dialogue
+**All workflows inspect the source's descriptions, frames and soundtrack.** If dialogue
 is present, its actual words, speaker roles and timing are transcribed and included in the
 prompt automatically, including offscreen voices. Music lyrics are not mistaken for
 conversation; uncertain words are flagged. Wardrobe, setting, props and facial acting
-are described in both modes. A mode choice alone does not install models or launch a render.
+are described in every mode. A mode choice alone does not install models or launch a render.
 
 See [the mode guide](references/reel-modes.md) for slot maps, ControlNet compatibility,
 frame alignment, strength tuning and separate readiness checks. The same choice is included
@@ -106,7 +110,7 @@ Ask which model to download and it answers from your actual VRAM, not from a gen
 | `references/templates.md` | Claude Code | fill-in templates for every mode, with a worked example |
 | `references/comfyui.md` | Claude Code | every checkpoint with sizes, quant explanations, VRAM tiers, node-by-node settings |
 | `references/troubleshooting.md` | Claude Code | symptom → cause → fix |
-| `references/reel-modes.md` | Claude Code | ControlNet / Motion Strip choice, source dialogue, input roles and readiness |
+| `references/reel-modes.md` | Claude Code | ControlNet / Motion Strip / Hybrid choice, source dialogue, input roles and readiness |
 | **`portable-prompt.md`** | **any chat model** | **all of the above except ComfyUI, in one pasteable block** |
 | **`reels-portable-prompt.md`** | **any chat model** | **the reel pipeline: breakdown → per-clip lengths → reference shopping list → per-clip prompts → edit sheet** |
 
@@ -139,7 +143,7 @@ Verified in the ComfyUI source: 24 fps, a `17k+5` frame grid with a trained rang
 
 ## Requirements
 
-For the skill: [Claude Code](https://claude.com/claude-code). For `portable-prompt.md` and `reels-portable-prompt.md`: a chat window. The skill and portable prompts are documentation, with no build step. Executing a ControlNet workflow additionally needs compatible H3 ControlNet weights, nodes and the chosen preprocessors; Motion Strip does not.
+For the skill: [Claude Code](https://claude.com/claude-code). For `portable-prompt.md` and `reels-portable-prompt.md`: a chat window. The skill and portable prompts are documentation, with no build step. Executing a ControlNet or Hybrid workflow additionally needs compatible H3 ControlNet weights, nodes and the chosen preprocessors; Motion Strip does not.
 
 ## Sources
 

@@ -116,8 +116,8 @@ Not from MiniMax, not from the source — craft rules adopted because they held 
 | An explicit written timeline outweighs a motion reference, so a summarised description makes the model invent its own choreography | Empirical |
 | Frame defaults 124 / 158 / 192 / 209 / 243+ per shot type | Empirical |
 | One primary camera move per shot | Empirical |
-| User-selectable `controlnet` and `motion_strip` workflows; ask when unspecified and retain the choice for that reel | Project convention requested 2026-09-08, not a MiniMax checkpoint mode or quality claim |
-| ControlNet defaults to face/body images; Motion Strip defaults to identity/look/strip; honour explicit slot maps and do not combine modes silently | Project convention; the three-slot map applies only to Motion Strip |
+| User-selectable `controlnet`, `motion_strip` and `hybrid` workflows; ask when unspecified and retain the choice for that reel | Project convention requested 2026-09-08, not a MiniMax checkpoint mode or quality claim |
+| ControlNet defaults to face/body images; Motion Strip defaults to identity/look/strip; Hybrid defaults to face/body/strip with optional explicitly selected look; honour explicit slot maps | Project convention; Hybrid is an explicit combination, not an automatic third look image |
 | In Motion Strip mode the reference video is not wired by default; its cost outweighing the strip's contribution is a user report, not a rule for ControlNet | User report (2026-08-19), uncontrolled; the encode-and-2-fps-context cost itself is Implementation |
 | A motion strip transfers poses and their order but no timing | Follows from it being a still image; the label order itself is Implementation |
 | Repeated ambient-motion vocabulary outweighs a key action named once, and the render performs the repeated activity | Empirical — one observed failure (2026-08-19), uncontrolled |
@@ -158,6 +158,8 @@ core or an official MiniMax guarantee. Inspected revision:
 | Depth 0.3 + pose 0.7 is an upstream example; saturation and early-release observations are shot-specific; Ref2VA is not the reported trained base pairing | Upstream empirical reports, not independently GPU-verified here — [README](https://github.com/wyzborrero/ComfyUI-H3-FunControl/blob/22a7ec38c4d16a76a8dea53b6e0faa0356f4f220/README.md) and [reference example](https://github.com/wyzborrero/ComfyUI-H3-FunControl/blob/22a7ec38c4d16a76a8dea53b6e0faa0356f4f220/workflows/02_depth_plus_pose_reference.json) |
 | Explicitly resolve crop/extension when valid target count lacks control frames; same source transform for both branches | Alignment requirement plus project policy against silently changing source timing |
 | Aspect-preserving strip panels, 990 px default height and enough distinct readable phase anchors | Image geometry and project convention, not a MiniMax-required height or fixed panel count |
+| Hybrid patches the existing Ref2VA `ref2va` MODEL branch with ControlNet maps and uses a chronological strip as ordinary Ref2VA image conditioning from one source interval; maps cover the sequence, strip panels are phases, and written timing sets pace | Hybrid product/workflow convention plus the existing H3-FunControl and Ref2VA implementation facts; not an official MiniMax mode or inference guarantee |
+| Hybrid verifies both controls and strip, preserves the existing audio route and strengths, and limits tuning to fixed-seed one-factor A/B tests | Project workflow requirement; not evidence of special strengths, automatic control-weight renormalisation or better quality |
 
 ## Community, unverified
 

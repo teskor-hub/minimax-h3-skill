@@ -9,10 +9,12 @@ Recreating a clip you like is normally guesswork — you watch it, remember roug
 ## Select the workflow and collect the description first
 
 Read [reel-modes.md](reel-modes.md) before preparing a rebuild. Honour the user's
-ControlNet or Motion Strip choice; ask once if the reel has no selected mode.
-Record `reel_mode` in asset notes, never in the H3 prompt. ControlNet uses aligned
-pose/depth maps plus face/body references; Motion Strip uses identity/look/strip images.
-The strip is not mandatory in ControlNet, and ControlNet is not a Motion Strip dependency.
+ControlNet, Motion Strip or Hybrid choice; an explicit request for controls plus a strip
+selects Hybrid directly, otherwise ask once if the reel has no selected mode. Record
+`reel_mode` in asset notes, never in the H3 prompt. ControlNet uses aligned pose/depth maps
+plus face/body references; Motion Strip uses identity/look/strip images; Hybrid uses maps
+plus face/body/strip and an optional explicitly selected look image. The strip is not
+mandatory in ControlNet, and ControlNet is not a Motion Strip dependency.
 
 **Require a description for each source video.** First read any attached text or matching
 sidecar (`source.txt`, `description.txt`, `описание видео*.txt`, or a clearly mapped
@@ -54,7 +56,10 @@ Sanity-check the shot table it prints. If a five-second reel reports twenty shot
 **1b. Prepare the selected motion evidence.** ControlNet needs the selected interval's
 aligned pose/depth sequences, matching actual target FPS/count and dimensions. Motion
 Strip needs distinct chronological panels at preserved aspect ratios and a compatible
-target look frame. Follow `reel-modes.md`; do not require both sets.
+target look frame. Hybrid needs both from one source interval, FPS, crop and target count:
+the maps cover the full sequence while the strip shows separate phases. Its look image is
+optional and only checked when selected. Follow `reel-modes.md`; require both sets only
+for Hybrid.
 
 **1c. Inspect and transcribe the source audio automatically.** If speech exists, record
 timestamps, actual words/language and who speaks in-frame/offscreen, then put those lines
@@ -64,10 +69,11 @@ versus automatic verification. Run `tools/check_prompt_dialogue.py` on dialogue 
 
 **2. Map shots to beats, using the measured times.** A shot from 1.24 s to 2.05 s is a 0.81-second beat, so write it as one. Do not round to something comfortable — that is exactly how a fall becomes moon gravity.
 
-**ControlNet alignment takes precedence over automatic upward rounding below.** A target
-count needs the same number of actual control frames. Resolve missing tail frames by
+**ControlNet/Hybrid alignment takes precedence over automatic upward rounding below.** A
+target count needs the same number of actual control frames. Resolve missing tail frames by
 an explicit shorter interval or an agreed extension policy; do not silently pad or retime.
-The chosen interval then sets the written timing and all control branches.
+For Hybrid, that chosen interval also supplies the strip phases; its panel count does not
+set the target count. The written timeline sets pace.
 
 **3. Pick `length` from `h3_length_options` — the value at or above the source duration, never below it.** The manifest brackets the source with valid `17k+5` frame counts. Take the one **≥** the duration being covered and trim the surplus in the editor; a 6.4-second reel becomes 158 frames (6.58 s), so every beat stretches by about 3 %. A 14.90-second take becomes 362 (15.08 s).
 
@@ -141,7 +147,7 @@ generation to find out.
 
 This is a generic multi-view reference example, not the default slot map of either
 Reel Maker workflow. Use the user's selected map from `reel-modes.md` when preparing
-ControlNet or Motion Strip assets; do not copy these three identity views blindly.
+ControlNet, Motion Strip or Hybrid assets; do not copy these three identity views blindly.
 
 For a 6.4-second reel that the tool reports as three shots — 0.00–2.02, 2.02–4.02, 4.02–6.40 — with the subject frontal in shot 1, in profile in shot 2, and walking away in shot 3:
 

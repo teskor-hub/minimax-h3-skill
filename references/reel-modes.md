@@ -1,36 +1,37 @@
-# Reel Maker: ControlNet or Motion Strip
+# Reel Maker: ControlNet, Motion Strip or Hybrid
 
-These are two **reel preparation workflows**, not new MiniMax checkpoint modes.
-Both normally use **Ref2VA** with a compatible `ref2va` checkpoint. Keep the existing
+These are three **reel preparation workflows**, not new MiniMax checkpoint modes.
+All normally use **Ref2VA** with a compatible `ref2va` checkpoint. Keep the existing
 MiniMax prompt format, source inspection, identity, dialogue and output-QC rules.
 
 ## Choose before preparing assets
 
 Accept `ControlNet`, `controlnet`, `контролнет`, `Motion Strip`, `motion-strip`,
-`motion strip`, `моушен стрип`. Record `reel_mode: controlnet` or
-`reel_mode: motion_strip` in the package's asset/wiring notes, outside the pasteable
+`motion strip`, `моушен стрип`, `Hybrid`, `hybrid`, `mix`, `микс`, `гибрид`. Record
+`reel_mode: controlnet`, `reel_mode: motion_strip` or `reel_mode: hybrid` in the
+package's asset/wiring notes, outside the pasteable
 H3 prompt. This is documentation metadata, not a ComfyUI setting or a model token.
 
 - Honour an explicit choice without asking again. Retain it for follow-ups to the same
   reel; changing it requires an explicit user request, not a silent fallback.
-- If neither the current request nor that reel's existing package states a choice,
-  ask one short question: **“Which Reel Maker workflow: ControlNet (pose/depth from
-  the source video) or Motion Strip (a storyboard image)?”** Source inspection may
+- An explicit request to use pose/depth controls **and** a motion strip selects Hybrid;
+  do not ask a binary follow-up. If neither the current request nor that reel's existing
+  package states a choice, ask one short question: **“Which Reel Maker workflow:
+  ControlNet (pose/depth), Motion Strip (a storyboard image), or Hybrid (both)?”** Source inspection may
   continue, but do not prepare mode-specific assets, download weights or launch a render
-  before the choice. A source video by itself does not imply either mode.
-- Keep the modes separate. Combine them only on an explicit hybrid-test request and
-  list every additional input and its role. Missing ControlNet dependencies do not
+  before the choice. A source video by itself does not imply a workflow.
+- Missing ControlNet dependencies do not
   authorise installing them, switching modes or renting compute without task authority.
 - If the user only requests a prompt, provide the selected mode's prompt and wiring
   notes; do not turn that into an installation or generation job.
 
-| | ControlNet | Motion Strip |
-|---|---|---|
-| Motion input | Time-aligned pose and/or depth IMAGE batches in ControlNet Apply | Chronological contact sheet in an ordinary Ref2VA image slot |
-| Default image references | Picture 1: face; Picture 2: body proportions | Picture 1: face; Picture 2: target look/composition; Picture 3: motion strip |
-| Appearance not supplied by those inputs | Wardrobe, room, props and light must be described explicitly | Look frame supplies appearance/composition; text still names important details |
-| Extra requirements | Compatible H3 ControlNet weights, custom nodes and selected preprocessors | No ControlNet model or pose/depth preprocessor required |
-| Main limitation | Bad or conflicting control maps can transfer jitter; exact motion and facial acting are not guaranteed | Sparse poses are guidance, not frame-by-frame control; written timing remains essential |
+| | ControlNet | Motion Strip | Hybrid |
+|---|---|---|---|
+| Motion input | Time-aligned pose and/or depth IMAGE batches in ControlNet Apply | Chronological contact sheet in an ordinary Ref2VA image slot | Both: maps control the sequence; strip supplies separate chronological phases of the same interval |
+| Default image references | Picture 1: face; Picture 2: body proportions | Picture 1: face; Picture 2: target look/composition; Picture 3: motion strip | Picture 1: face; Picture 2: body; Picture 3: motion strip; Picture 4: optional explicit look/composition |
+| Appearance not supplied by those inputs | Wardrobe, room, props and light must be described explicitly | Look frame supplies appearance/composition; text still names important details | Describe wardrobe, room, props and light; an optional look frame may add composition, never silently |
+| Extra requirements | Compatible H3 ControlNet weights, custom nodes and selected preprocessors | No ControlNet model or pose/depth preprocessor required | Compatible ControlNet stack plus strip preparation |
+| Main limitation | Bad or conflicting control maps can transfer jitter; exact motion and facial acting are not guaranteed | Sparse poses are guidance, not frame-by-frame control; written timing remains essential | Combining controls is not a quality guarantee; inspect both signals and keep the written timeline |
 
 The slot maps are defaults for these workflows, not immutable filenames or a ban on
 user-selected references. Inspect the actual graph and images. Preserve an explicitly
@@ -56,10 +57,10 @@ scene-detector output blindly.
 
 Record the opening state, clothing layers/colours/fit, garment coverage and changes,
 handedness and actual hand-offs, props, room layout, lighting, camera path, complete
-action phases, secondary motion and ending. Both modes need that detail in the prompt.
+action phases, secondary motion and ending. Every mode needs that detail in the prompt.
 Neither depth maps nor a face/body photo tells H3 what the original outfit or room was.
 
-Inspect the soundtrack for every source reel in either mode. If speech is present,
+Inspect the soundtrack for every source reel in every mode. If speech is present,
 automatically transcribe it with timestamps and include the lines in the prompt; do not
 wait for a separate transcription request. Distinguish on-screen speakers from offscreen
 voices. First audible speaker is `(S1)`, even offscreen;
@@ -207,6 +208,45 @@ Verify actual image order/roles, look-frame composition, readable distinct strip
 panel aspect ratios, source-aligned timing, consistent text/reference scope and the audio
 route. Check that a still portrait is not being treated as the required facial performance.
 Do not claim control-map validation when this mode has no control maps.
+
+## Hybrid workflow
+
+Hybrid deliberately combines a Ref2VA image strip with an H3 ControlNet pose/depth path:
+the maps patch the existing `ref2va` MODEL branch, while the strip is ordinary Ref2VA image
+conditioning. It is neither a new checkpoint nor an automatic Ref2VA `<Video 1>` input.
+Keep the graph's existing sampling, sigma-shift and audio route unchanged; Hybrid itself
+does not install, render or select any dependency.
+
+Load the source once and select one interval, FPS, crop/pad transform and target frame
+count. Build pose/depth IMAGE batches from that complete sequence. Build the motion strip
+from distinct chronological phases of the **same** interval; it is not a second timeline
+and its panel count never determines target count. The written prompt timeline sets pace.
+Do not silently duplicate, retime or extend either signal: resolve a count mismatch with
+an explicit shorter interval or agreed extension policy. Do not renormalise existing
+ControlNet weights.
+
+The default Ref2VA images are `<Picture 1>` face/identity, `<Picture 2>` body proportions,
+and `<Picture 3>` motion strip. Add `<Picture 4>` only when the user explicitly chooses a
+look/composition image; it is not a third look photo or an automatic gate. Renumber prompt
+labels to the actual slots. Control maps create neither `<Video 1>` nor a text-encoder
+label; the strip occupies its actual `<Picture N>` slot. State the roles in `subject_definitions`: one target subject uses the
+face/body references, the strip supplies ordered action phases, and the optional look image
+anchors composition only when connected.
+
+Reuse existing ControlNet strengths and windows. Do not claim special Hybrid strengths,
+automatic control-weight renormalisation or guaranteed quality. If tuning is requested,
+make an A/B run at a fixed seed with one changed factor at a time.
+
+### Hybrid readiness
+
+Verify the ControlNet stack, graph links, rendered pose/depth maps, difficult frames,
+dimensions, FPS, count, crop and source interval **and** the wired strip's order, readable
+distinct phases, panel aspect ratios and matching interval. Verify the prompt's roles,
+timeline, wardrobe, scene, props, acting and camera against source evidence. Check the
+optional look-frame composition only when its actual connected `<Picture N>` slot is
+present. Preserve the chosen
+audio route. Mark unavailable checks **not verified**; a parseable graph is not a
+GPU-tested quality result.
 
 ## Handoff and switching
 
