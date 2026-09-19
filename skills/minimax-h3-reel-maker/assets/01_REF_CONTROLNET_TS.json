@@ -92,7 +92,7 @@
       "id": 123,
       "type": "KSamplerSelect",
       "pos": [
-        2500,
+        3000,
         1320
       ],
       "size": [
@@ -208,7 +208,7 @@
       "id": 144,
       "type": "PathchSageAttentionKJ",
       "pos": [
-        2100,
+        2530,
         1180
       ],
       "size": [
@@ -252,7 +252,7 @@
       "id": 124,
       "type": "BasicScheduler",
       "pos": [
-        2500,
+        3000,
         1450
       ],
       "size": [
@@ -409,7 +409,7 @@
       "id": 122,
       "type": "VAEDecode",
       "pos": [
-        3280,
+        3850,
         1180
       ],
       "size": [
@@ -453,7 +453,7 @@
       "id": 126,
       "type": "BasicGuider",
       "pos": [
-        2500,
+        3000,
         1180
       ],
       "size": [
@@ -495,7 +495,7 @@
       "id": 129,
       "type": "RandomNoise",
       "pos": [
-        2100,
+        2530,
         1340
       ],
       "size": [
@@ -529,7 +529,7 @@
       "id": 125,
       "type": "SamplerCustomAdvanced",
       "pos": [
-        2910,
+        3460,
         1200
       ],
       "size": [
@@ -592,7 +592,7 @@
       "id": 121,
       "type": "VAEDecodeAudio",
       "pos": [
-        3280,
+        3850,
         1320
       ],
       "size": [
@@ -636,7 +636,7 @@
       "id": 130,
       "type": "CreateVideo",
       "pos": [
-        3650,
+        4200,
         1200
       ],
       "size": [
@@ -690,12 +690,12 @@
       "id": 92,
       "type": "SaveVideo",
       "pos": [
-        4050,
+        4600,
         1180
       ],
       "size": [
-        1210,
-        106
+        640,
+        760
       ],
       "flags": {},
       "order": 38,
@@ -729,12 +729,12 @@
       "id": 136,
       "type": "MiniMaxH3ReferenceToVideo",
       "pos": [
-        1650,
+        1970,
         1180
       ],
       "size": [
-        410,
-        570
+        500,
+        720
       ],
       "flags": {},
       "order": 18,
@@ -942,7 +942,7 @@
       "type": "ResolutionSelector",
       "pos": [
         60,
-        900
+        940
       ],
       "size": [
         270,
@@ -1777,12 +1777,12 @@
       "id": 174,
       "type": "MarkdownNote",
       "pos": [
-        2150,
+        2530,
         1790
       ],
       "size": [
         620,
-        690
+        300
       ],
       "flags": {},
       "order": 14,
