@@ -1,5 +1,12 @@
 # Reel Maker: ControlNet, Motion Strip or Hybrid
 
+> **Current packaged defaults (2026-09-19):** source-video reconstruction uses Ref +
+> pose/depth ControlNet with mandatory TS smoother; no source video uses Ref Only with
+> photos/text and no required controls. See [the dedicated skill](../skills/minimax-h3-reel-maker/SKILL.md).
+> This document describes explicitly selected advanced/legacy workflows; its mode-selection
+> question and optional-smoothing language do not override the two packaged defaults.
+
+
 These are three **reel preparation workflows**, not new MiniMax checkpoint modes.
 All normally use **Ref2VA** with a compatible `ref2va` checkpoint. Keep the existing
 MiniMax prompt format, source inspection, identity, dialogue and output-QC rules.

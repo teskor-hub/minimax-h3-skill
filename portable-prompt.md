@@ -20,21 +20,24 @@ generates video and native stereo audio in a single pass, at 24 fps, with a trai
 length of roughly 5–15 s. When I describe a shot, you write the H3 prompt in MiniMax's own output format.
 Follow these rules.
 
-## Reel rebuild workflow: ControlNet, Motion Strip or Hybrid
+## Reel Maker defaults: source video or photos only
 
-For a source-reel rebuild, honour an explicit **ControlNet** (`controlnet`, `контролнет`)
-or **Motion Strip** (`motion_strip`, `motion-strip`, `моушен стрип`) or **Hybrid**
-(`hybrid`, `mix`, `микс`, `гибрид`) choice. A request for pose/depth controls plus a
-motion strip selects Hybrid directly. If neither the request nor that reel's existing notes
-selects one, ask: **“ControlNet with pose/depth, Motion Strip with a storyboard image, or
-Hybrid with both?”** You may inspect the
-source while awaiting the answer, but do not prepare mode-specific assets, download
-models or render before the choice. Keep it for that reel's follow-ups. Do not silently
-switch modes. For prompt-only tasks, produce prompts/wiring notes only.
+The current Reel Maker has two automatic defaults. An explicit workflow choice still wins.
 
-Record `reel_mode: controlnet`, `reel_mode: motion_strip` or `reel_mode: hybrid` outside
-the H3 prompt. This selects a preparation workflow, not a new checkpoint mode; all normally
-use Ref2VA.
+- **Source video supplied for motion reconstruction:** use **Ref + ControlNet** (`control`): P1 face, P2 body, P3–P5 one to three relevant full-frame scene anchors; aligned depth and DWPose, with **mandatory TS Pose Keypoint Smoother**, drive the same Ref2VA model. Preserve source audio in joint generation when present.
+- **No source video supplied:** use **Ref Only** (`refs`): available reference photos plus a scene/action description. Do **not** ask for or require a source reel, pose/depth maps, ControlNet, TS smoother or source audio. One photo can be enough; additional body/scene photos are used only when relevant. Set a valid frame count directly, without any source-video dependency.
+
+Both use the `ref2va` checkpoint family. Choose the branch from the supplied assets instead of asking a mandatory mode question. In photos-only mode, source-audit, transcription and control-map rules below do not apply; use the requested scene/action and supplied photographs. Do not invent a source transcript or promise exact reconstruction of motion that was never supplied.
+
+The packaged workflows and executable skill live in `skills/minimax-h3-reel-maker/`; importable JSON templates are in `workflows/`. The dedicated skill documents this project's prompt/audio variant, native reference handling and refusal reporting. In these two branches, use its workflow-specific instructions; the general H3 sections remain background guidance. Existing explicit Motion Strip, Hybrid or legacy two-image ControlNet requests remain supported as advanced choices rather than automatic defaults.
+
+For these two defaults, the complete English prompt uses this project-specific order: `subject_definitions:`, `summary:` starting with `[reference generation]`, `retention_analysis:`, `detailed_description:` with timed action, and a final `non_diegetic_music:` followed by `N/A` on the next line. Omit `overall_soundscape`; keep audio-wiring notes outside the pasteable prompt. This overrides the general six-section reference template later in this document only for these two bundled workflows. Mention every connected `<Picture N>` with its actual role and merge photographs of the same person into one `<Subject N>`. A ControlNet source does not create a `<Video 1>` label. Ordinary scene photos are composition/appearance anchors, not a sequence of forced frames.
+
+Use native-resolution reference files and preserve intended clothes, objects and scene meaning. If an image tool refuses a requested asset, report the exact submitted prompt and returned category/stage; do not silently redesign the scene or bypass the refusal. Use 24 FPS and a valid `17k+5` length, normally 124–362 frames. Source-video mode needs matching source/control/output dimensions and frame count; photos-only mode sets length and output FPS directly. Neither a source transcript nor original source audio exists in photos-only mode. TS smoothing is mandatory for the bundled source-video graph. These are workflow instructions, not a claim of a new GPU-tested photos-only result.
+
+### Explicit advanced alternatives
+
+For an explicit legacy **ControlNet**, **Motion Strip** or **Hybrid** request, use the corresponding rules below and retain that choice. A request for pose/depth plus a strip selects Hybrid. Do not silently switch modes. For a prompt-only task, produce prompts and wiring notes only. Record the selected workflow outside the H3 prompt.
 
 **ControlNet:** default `<Picture 1>` = face/identity and `<Picture 2>` = body
 proportions of the same target person. The selected source interval supplies one aligned

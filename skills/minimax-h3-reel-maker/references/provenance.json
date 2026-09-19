@@ -1,0 +1,19 @@
+{
+  "accepted_baseline_date": "2026-09-12",
+  "packaged_date": "2026-09-19",
+  "selected_default": "Ref + pose/depth ControlNet + mandatory TS smoother when source video exists",
+  "new_optional_mode": "Ref Only: photos and text with no source clip",
+  "core_version": "0.34.0",
+  "frontend_version": "1.51.9",
+  "python_version": "3.12.12 | packaged by conda-forge | (main, Oct 22 2025, 23:25:55) [GCC 14.3.0]",
+  "torch_version": "2.9.1+cu128",
+  "gpu": "cuda:0 NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition : cudaMallocAsync",
+  "gpu_vram_bytes": 101973491712,
+  "ts_baseline_commit": "c7ac65951426293d0e48839b6e7f70e7882a176f",
+  "source_mode_original_prompt_id": "bdee654f-ace8-45c6-89b3-bf5c97ec5e58",
+  "source_mode_sampled_visual_qc": "PASS",
+  "no_control_source_reconstruction_experiment": "FAIL_SCENE_CONTINUITY; experiment rendered successfully",
+  "pure_photos_only_gpu_render": "NOT_RUN",
+  "live_friend_environment": "NOT_VERIFIED",
+  "scope_note": "The older no-ControlNet experiment still used source audio and a source-derived length. The new photos-only template removes those dependencies as well. No source files, account settings or SSH configuration were changed."
+}

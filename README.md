@@ -1,5 +1,48 @@
 # MiniMax H3 — Claude Code Skill
 
+## Current Reel Maker: two modes, ready-to-import workflows
+
+For reference-based reels, install **[MiniMax H3 Reel Maker](skills/minimax-h3-reel-maker/SKILL.md)**.
+It chooses the right branch from your inputs:
+
+| Your inputs | Workflow | What is required |
+|---|---|---|
+| An original video whose action should be reproduced | **Ref + ControlNet + TS smoother** | Source clip, face/body references and 1–3 scene anchors; aligned pose/depth controls |
+| Photos and a description, with no original video | **Ref Only** | Relevant photos and text; no original video, pose/depth, ControlNet, smoother or source audio required |
+
+- [Source-video workflow JSON](workflows/01_REF_CONTROLNET_TS.json)
+- [Photos-only workflow JSON](workflows/02_REF_ONLY.json)
+- [Setup, dependencies and commands](skills/minimax-h3-reel-maker/references/workflows.md)
+- [Prompt structure and complete photos-only example](skills/minimax-h3-reel-maker/references/prompting.md)
+- [Offline HTML quick start](docs/reel-maker.html) — download and open locally.
+
+The JSON files are **templates**: replace the prompt and inputs before rendering, or let the
+skill's `configure_workflow.py` create a package with only the images you actually supply.
+Model weights and personal photo/video examples are not bundled. The source-video graph
+comes from a previously accepted render; the pure photos-only graph is locally checked but
+has not been GPU-rendered for this release. See the included provenance record.
+
+### Install the dedicated skill
+
+Clone/download this repository, then copy **the entire** `skills/minimax-h3-reel-maker`
+folder into your agent's skill directory. Do not copy only `SKILL.md`: its scripts,
+references and assets are required.
+
+- **Codex:** `$CODEX_HOME/skills/minimax-h3-reel-maker`, normally `~/.codex/skills/minimax-h3-reel-maker`.
+- **Claude Code:** `~/.claude/skills/minimax-h3-reel-maker`, or the project's `.claude/skills/minimax-h3-reel-maker`.
+
+Open a new turn/session so the agent discovers the installed skill. Ask, for example:
+
+> Use $minimax-h3-reel-maker. I have these photos and no source video. Create a short scene where the person waves naturally. Prepare Ref Only; do not request ControlNet or pose inputs.
+
+> Use $minimax-h3-reel-maker. Rebuild this source reel using my face/body photos and matching scene references. Keep pose/depth ControlNet and TS smoothing. Preserve the clothing, action and dialogue.
+
+Existing session authorization still governs installs, GPU jobs and uploads. The preparation
+helper is local-only and never starts a render. Save every actual generation attempt separately.
+
+## General H3 prompting skill and advanced workflows
+
+
 A Claude Code skill for **MiniMax H3**, the open-weight omni-modal video model that generates video *and* native stereo audio in a single pass. Install it once and Claude stops guessing: it picks the right checkpoint, writes prompts in MiniMax's documented rewrite-output structure, and knows why your camera move rendered a physical camera.
 
 Not using Claude Code? The same thing ships as [`portable-prompt.md`](portable-prompt.md) — one block of text you paste into ChatGPT, Grok or anything else. Building a whole reel rather than a single shot? [`reels-portable-prompt.md`](reels-portable-prompt.md) is the same knowledge wrapped in a clip-by-clip pipeline.
@@ -50,12 +93,12 @@ Also a pasteable prompt, but pitched a level up. A source reel that fits the sel
 
 Pair it with [`tools/reel_shots.py`](tools/reel_shots.py) when rebuilding an existing reel: run the tool, paste the `manifest.json`, and the beat timings come from measurement instead of memory.
 
-## Choose your Reel Maker workflow
+## Explicit legacy / advanced rebuild workflows
 
-When rebuilding a source reel, choose **ControlNet**, **Motion Strip** or **Hybrid**. If you
-do not specify one, the skill asks before preparing mode-specific inputs. An explicit request
-to combine pose/depth controls with a strip selects Hybrid directly. It remembers the choice
-for that reel's follow-ups; these are three workflows using Ref2VA, not new model checkpoints.
+The current default is the two-mode Reel Maker above. The following table documents
+explicit advanced choices: legacy two-image **ControlNet**, **Motion Strip**, and **Hybrid**.
+A request to combine pose/depth controls with a strip selects Hybrid directly. These are
+preparation workflows using Ref2VA, not new model checkpoints.
 
 | Workflow | What you supply | What it needs |
 |---|---|---|
@@ -79,7 +122,7 @@ first and asks only when it is missing, identifying the relevant filename/reel. 
 not silently ignore the description or invent its meaning; an explicit request to proceed
 without one is honoured and noted.
 
-**All workflows inspect the source's descriptions, frames and soundtrack.** If dialogue
+**All source-video workflows inspect the source's descriptions, frames and soundtrack.** If dialogue
 is present, its actual words, speaker roles and timing are transcribed and included in the
 prompt automatically, including offscreen voices. Music lyrics are not mistaken for
 conversation; uncertain words are flagged. Wardrobe, setting, props and facial acting
@@ -87,8 +130,8 @@ are described in every mode. A mode choice alone does not install models or laun
 
 See [the mode guide](references/reel-modes.md) for slot maps, ControlNet compatibility,
 frame alignment, strength tuning and separate readiness checks. The same choice is included
-in both portable prompts. This repository documents the workflows; it does not bundle the
-ControlNet weights or a ready-to-import ComfyUI graph.
+in both portable prompts. The current two-mode graphs are bundled in `workflows/`; ControlNet and H3 model weights
+are not included. The advanced mode guide remains separate from the packaged defaults.
 
 ## What it does
 

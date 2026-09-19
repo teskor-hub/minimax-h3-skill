@@ -1,0 +1,14 @@
+subject_definitions:
+REPLACE_WITH_A_COMPLETE_REEL_PROMPT. Define the target subject and the distinct role of every connected Picture. Use only the Pictures actually connected.
+
+summary:
+[reference generation] Describe the requested new scene and its action.
+
+retention_analysis:
+State which appearance, wardrobe, props and scene elements each reference supplies.
+
+detailed_description:
+Write timed physical action and viewpoint changes for the configured duration. Source-video reconstruction uses measured source beats. Photos-only generation uses the user's requested action.
+
+non_diegetic_music:
+N/A

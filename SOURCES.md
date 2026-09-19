@@ -196,3 +196,17 @@ Read from the banodoco Discord, where kijai (author of the KJ nodes and Sol-Attn
 ## What is missing
 
 No controlled A/B data exists here for: the scheduler comparison, the sigma-shift defaults, quality deltas between quants, whether 20 steps differ visibly from 30, whether `[video editing]` behaves differently from `[reference generation]` under local inference, or whether writing in MiniMax's documented format measurably beats plain prose given that ComfyUI runs no rewriter (a paired minimal-vs-elaborated comparison *within* the format was run once on 2026-08-19 and favoured the elaborated prompt, but that varies detail, not format). Those would need fixed-seed paired renders. Until someone does that, none of them should be stated as measured.
+
+
+## Dedicated two-mode Reel Maker — 2026-09-19
+
+| Claim / decision | Provenance |
+|---|---|
+| Source video selects Ref + pose/depth ControlNet + mandatory TS smoother; no source selects photos-only Ref Only | Explicit project/user workflow choice, not a model restriction. Propagated to the root skill, both portable prompts, README and the dedicated skill. |
+| Face/body + up to three full-frame scene anchors for reconstruction; one to five images accepted for photos only | Project packaging convention. The cached H3 node supports additional image slots; five is not a model maximum. |
+| 768×1376 at 1 MP, multiple 32; Euler/normal 20 steps; depth 0.3 / pose 0.7 | Preserved settings from the accepted local 015 source-video run, 2026-09-12. Empirical baseline, not universal best settings. Sanitized runtime provenance is bundled. |
+| A photos-only graph needs no source frame count, source-audio link, pose/depth estimators, TS smoother or ControlNet | Implementation: graph ancestry and API export checked locally after removing these dependencies. Native video/audio output remains wired. No fresh photos-only GPU render is claimed. |
+| No-ControlNet reconstruction deviated from source continuity in an earlier test | Empirical, one source-specific experiment. Does not establish a universal defect rate or invalidate photos-only creation. |
+| TS keypoint smoother consumes DWPose POSE_KEYPOINT and returns a rendered IMAGE; hands=false / face=true preserved | [Teskor's Utils source](https://github.com/teskor-hub/comfyui-teskors-utils/blob/main/nodes/openpose_smoother.py), inspected 2026-09-19, and accepted-run graph. The separate POSEDATA node's force_body_18 widget is not part of TSPoseKeypointSmoother's nine-widget layout. |
+| Preserve exact refusal records instead of silently changing clothing, props or meaning | Explicit user workflow requirement. An output-stage category does not identify a specific triggering phrase. |
+| No exact identity, motion, speech or recipient-machine compatibility guarantee | Scope of local structural checks and sampled visual QC; model outputs and a new installation still need actual validation. |

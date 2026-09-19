@@ -22,17 +22,21 @@ This skill follows MiniMax's own prompt-writing guides and adds the failure mode
 
 ## 0. Before writing a prompt
 
-**For a reel rebuild, choose the Reel Maker workflow first.** Honour an explicit
-`ControlNet` / `controlnet` / `контролнет`, `Motion Strip` / `motion_strip` /
-`моушен стрип`, or `Hybrid` / `hybrid` / `mix` / `микс` / `гибрид` choice. An explicit
-request to combine pose/depth controls and a motion strip selects `hybrid` directly.
-Otherwise ask which of the three the user wants before preparing
-mode-specific assets; a source video alone does not choose a mode. Retain the choice for
-that reel's follow-ups. Record `reel_mode: controlnet`, `reel_mode: motion_strip` or
-`reel_mode: hybrid`
-outside the pasteable prompt, then read `references/reel-modes.md`. These are preparation
-workflows within Ref2VA, not additional H3 checkpoint modes. Do not silently switch modes,
-install missing dependencies or add an optional look reference.
+**Use the current two-mode Reel Maker for reference-based reels.** Read
+`skills/minimax-h3-reel-maker/SKILL.md` and follow its workflow-specific instructions.
+With a source clip to reconstruct, select Ref + pose/depth ControlNet + mandatory TS
+Pose Keypoint Smoother. Without a source clip, select Ref Only: photos and text, without
+requiring source footage, pose, depth, ControlNet, TS smoothing or source audio.
+One relevant photo may be sufficient in Ref Only. Do not ask a mandatory mode question
+when the supplied assets already select the branch. This is automatic preparation routing,
+not permission to install dependencies, rent compute or submit a render.
+
+An explicit Motion Strip, Hybrid or legacy two-image ControlNet choice overrides these
+defaults; for those advanced alternatives read `references/reel-modes.md`. These remain
+preparation workflows within Ref2VA, not additional checkpoints. Source-inspection and
+source-transcription requirements below apply only when a source video actually exists.
+The dedicated skill's instructions take precedence for its two bundled graphs; the general
+H3 material below remains applicable to other generation modes.
 
 **Require a description for each source video.** First read any attached text or matching
 sidecar (`source.txt`, `description.txt`, `описание видео*.txt`, or a clearly mapped
